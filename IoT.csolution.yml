@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/0.9.3/tools/projmgr/schemas/csolution.schema.json
+
+solution:
+  packs:
+    - pack: ARM::CMSIS
+    - pack: ARM::CMSIS-Driver
+    - pack: ARM::CMSIS-FreeRTOS@10.4.6
+    - pack: ARM::mbedTLS@1.7.0
+    - pack: AWS::backoffAlgorithm@1.0.0-Beta
+    - pack: AWS::coreMQTT@1.1.0-Beta
+    - pack: AWS::coreMQTT_Agent@1.0.1-Beta
+    - pack: AWS::corePKCS11@3.0.0-Beta
+    - pack: AWS::FreeRTOS-Plus-TCP@2.3.2-Beta
+    - pack: Arm-Packs::PKCS11
+    - pack: Keil::ARM_Compiler
+    - pack: MDK-Packs::IoT_Socket
+
+    - pack: Keil::V2M-MPS2_CMx_BSP@1.8.0
+      for-type:
+        - +AVH_MPS2_Cortex-M7
+
+    - pack: ARM::V2M_MPS3_SSE_300_BSP@1.2.0
+      for-type:
+        - +AVH_MPS3_Corstone-300
+
+    - pack: NXP::MIMXRT1052_DFP@13.1.0
+      for-type:
+        - +IMXRT1050-EVKB
+        - +IMXRT1050-EVKB_ESP8266
+        - +IMXRT1050-EVKB_WizFi360
+    - pack: NXP::EVKB-IMXRT1050_BSP@13.1.0
+      for-type:
+        - +IMXRT1050-EVKB
+        - +IMXRT1050-EVKB_ESP8266
+        - +IMXRT1050-EVKB_WizFi360
+    - pack: Keil::IMXRT1050-EVKB_BSP@1.0.0
+      for-type:
+        - +IMXRT1050-EVKB
+        - +IMXRT1050-EVKB_ESP8266
+        - +IMXRT1050-EVKB_WizFi360
+    - pack: Keil::iMXRT105x_MWP@1.4.0
+      for-type:
+        - +IMXRT1050-EVKB
+        - +IMXRT1050-EVKB_ESP8266
+        - +IMXRT1050-EVKB_WizFi360
+
+  target-types:
+    - type: AVH_MPS2_Cortex-M7
+      device: ARM::CMSDK_CM7_DP_VHT
+    - type: AVH_MPS3_Corstone-300
+      # device: ARM::SSE-300-MPS3_VHT
+      device: ARM::SSE-300-MPS3
+    - type: IMXRT1050-EVKB
+      # board: EVKB-IMXRT1050_MDK
+      device: MIMXRT1052DVL6B
+    - type: IMXRT1050-EVKB_ESP8266
+      # board: EVKB-IMXRT1050_MDK
+      device: MIMXRT1052DVL6B
+    - type: IMXRT1050-EVKB_WizFi360
+      # board: EVKB-IMXRT1050_MDK
+      device: MIMXRT1052DVL6B
+
+  build-types:
+    - type: Debug
+      compiler: AC6
+      misc:
+        - C*:
+          - -O1
+          - -g
+        - C:
+          - -std=c99
+        - ASM:
+          - -masm=auto
+        - Link:
+          - --entry=Reset_Handler
+    - type: Release
+      compiler: AC6
+      misc:
+        - C*:
+          - -O3
+        - C:
+          - -std=c99
+        - ASM:
+          - -masm=auto
+        - Link:
+          - --entry=Reset_Handler
+
+  projects:
+    - project: ./AWS_MQTT_MutualAuth_Demo/AWS_MQTT_MutualAuth_Demo.cproject.yml

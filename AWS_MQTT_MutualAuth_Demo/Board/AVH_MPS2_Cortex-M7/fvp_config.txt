@@ -1,0 +1,10 @@
+# Parameters:
+# instance.parameter=value       #(type, mode) default = 'def value' : description : [min..max]
+#------------------------------------------------------------------------------
+fvp_mps2.hostbridge.interfaceName=                    # (string, init-time) default = ''       : Host Interface
+fvp_mps2.hostbridge.userNetPorts=                     # (string, init-time) default = ''       : Listening ports to expose in user-mode networking
+fvp_mps2.hostbridge.userNetSubnet=172.20.51.0/24      # (string, init-time) default = '172.20.51.0/24' : Virtual subnet for user-mode networking
+fvp_mps2.hostbridge.userNetworking=1                  # (bool  , init-time) default = '0'      : Enable user-mode networking
+fvp_mps2.smsc_91c111.enabled=1                        # (bool  , init-time) default = '0'      : Host interface connection enabled
+fvp_mps2.smsc_91c111.mac_address=00:02:f7:ef:0b:86    # (string, init-time) default = '00:02:f7:ef:0b:86' : Host/model MAC address
+#------------------------------------------------------------------------------
