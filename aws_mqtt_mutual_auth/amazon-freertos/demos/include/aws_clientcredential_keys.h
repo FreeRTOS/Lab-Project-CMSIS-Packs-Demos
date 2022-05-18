@@ -11,7 +11,7 @@
  * "...base64 data...\n"\
  * "-----END CERTIFICATE-----"
  */
-#define keyCLIENT_CERTIFICATE_PEM 
+#define keyCLIENT_CERTIFICATE_PEM ""
 /*
  * PEM-encoded client private key.
  *
@@ -20,7 +20,7 @@
  * "...base64 data...\n"\
  * "-----END RSA PRIVATE KEY-----"
  */
-#define keyCLIENT_PRIVATE_KEY_PEM
+#define keyCLIENT_PRIVATE_KEY_PEM ""
 
 /*
  * PEM-encoded Just-in-Time Registration (JITR) certificate (optional).
