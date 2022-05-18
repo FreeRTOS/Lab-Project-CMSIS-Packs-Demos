@@ -64,6 +64,7 @@ project:
     - group: main
       files:
         - file: ./app_main.c
+        - file: ./mqtt_demo_mutual_auth.c
     - group: config_files
       files:
         - file: ./config_files/aws_demo_config.h
@@ -88,9 +89,6 @@ project:
         - file: ./amazon-freertos/demos/demo_runner/aws_demo.c
         - file: ./amazon-freertos/demos/demo_runner/iot_demo_runner.c
         - file: ./amazon-freertos/demos/demo_runner/iot_demo_freertos.c
-    - group: demos_coreMQTT
-      files:
-        - file: ./amazon-freertos/demos/coreMQTT/mqtt_demo_mutual_auth.c
     - group: demos_network_manager
       files:
         - file: ./amazon-freertos/demos/network_manager/iot_network_manager_private.h
