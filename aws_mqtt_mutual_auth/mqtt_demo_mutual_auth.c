@@ -474,11 +474,7 @@ static MQTTFixedBuffer_t xBuffer =
  * connection to the broker goes down, the code tries to reconnect to the broker
  * with an exponential backoff mechanism.
  */
-int RunCoreMqttMutualAuthDemo( bool awsIotMqttMode,
-                               const char * pIdentifier,
-                               void * pNetworkServerInfo,
-                               void * pNetworkCredentialInfo,
-                               const IotNetworkInterface_t * pNetworkInterface )
+void vCoreMQTTMutualAuthDemoTask( void * pvParam )
 {
     uint32_t ulPublishCount = 0U, ulTopicCount = 0U;
     const uint32_t ulMaxPublishCount = 5UL;
@@ -489,19 +485,11 @@ int RunCoreMqttMutualAuthDemo( bool awsIotMqttMode,
     TransportSocketStatus_t xNetworkStatus;
     BaseType_t xIsConnectionEstablished = pdFALSE;
     SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
-
-    /* Upon return, pdPASS will indicate a successful demo execution.
-    * pdFAIL will indicate some failures occurred during execution. The
-    * user of this demo must check the logs for any failure codes. */
     BaseType_t xDemoStatus = pdFAIL;
 
-    /* Remove compiler warnings about unused parameters. */
-    ( void ) awsIotMqttMode;
-    ( void ) pIdentifier;
-    ( void ) pNetworkServerInfo;
-    ( void ) pNetworkCredentialInfo;
-    ( void ) pNetworkInterface;
+    ( void ) pvParam;
 
+    
     /* Set the entry time of the demo application. This entry time will be used
      * to calculate relative time elapsed in the execution of the demo application,
      * by the timer utility function that is provided to the MQTT library.
@@ -663,9 +651,9 @@ int RunCoreMqttMutualAuthDemo( bool awsIotMqttMode,
                    democonfigMQTT_MAX_DEMO_COUNT,
                    ( ( democonfigMQTT_MAX_DEMO_COUNT / 2 ) + 1 ) ) );
     }
-
-    return ( xDemoStatus == pdPASS ) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+
 /*-----------------------------------------------------------*/
 
 static BaseType_t prvBackoffForRetry( BackoffAlgorithmContext_t * pxRetryParams )

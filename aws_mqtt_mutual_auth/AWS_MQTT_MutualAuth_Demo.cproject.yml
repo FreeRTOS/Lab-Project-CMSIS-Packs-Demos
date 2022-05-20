@@ -79,16 +79,9 @@ project:
       files:
         - file: ./amazon-freertos/demos/include/aws_clientcredential.h
         - file: ./amazon-freertos/demos/include/aws_clientcredential_keys.h
-        - file: ./amazon-freertos/demos/include/aws_demo.h
         - file: ./amazon-freertos/demos/include/aws_iot_metrics.h
         - file: ./amazon-freertos/demos/include/iot_config_common.h
         - file: ./amazon-freertos/demos/include/iot_demo_logging.h
-        - file: ./amazon-freertos/demos/include/iot_demo_runner.h
-    - group: demos_demo_runner
-      files:
-        - file: ./amazon-freertos/demos/demo_runner/aws_demo.c
-        - file: ./amazon-freertos/demos/demo_runner/iot_demo_runner.c
-        - file: ./amazon-freertos/demos/demo_runner/iot_demo_freertos.c
     - group: demos_network_manager
       files:
         - file: ./amazon-freertos/demos/network_manager/iot_network_manager_private.h
