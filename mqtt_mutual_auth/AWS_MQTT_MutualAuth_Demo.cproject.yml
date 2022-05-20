@@ -18,17 +18,11 @@ project:
   add-paths:
     - ./config_files
     - ./amazon-freertos/demos/include
-    - ./amazon-freertos/demos/network_manager
     - ./amazon-freertos/demos/common/pkcs11_helpers
     - ./amazon-freertos/libraries/3rdparty/mbedtls_config
     - ./amazon-freertos/libraries/logging/include
-    - ./amazon-freertos/libraries/abstractions/platform/include
-    - ./amazon-freertos/libraries/abstractions/platform/freertos/include
     - ./amazon-freertos/libraries/abstractions/secure_sockets/include
     - ./amazon-freertos/libraries/abstractions/transport/secure_sockets
-    - ./amazon-freertos/libraries/abstractions/wifi/include
-    - ./amazon-freertos/libraries/c_sdk/standard/common/include
-    - ./amazon-freertos/libraries/c_sdk/standard/common/include/private
     - ./amazon-freertos/libraries/freertos_plus/standard/crypto/include
     - ./amazon-freertos/libraries/freertos_plus/standard/tls/include
 
@@ -67,7 +61,6 @@ project:
         - file: ./mqtt_demo_mutual_auth.c
     - group: config_files
       files:
-        - file: ./config_files/aws_demo_config.h
         - file: ./config_files/aws_mbedtls_config.h
         - file: ./config_files/core_mqtt_config.h
         - file: ./config_files/core_pkcs11_config.h
@@ -79,13 +72,8 @@ project:
       files:
         - file: ./amazon-freertos/demos/include/aws_clientcredential.h
         - file: ./amazon-freertos/demos/include/aws_clientcredential_keys.h
+        - file: ./amazon-freertos/demos/include/iot_default_root_certificates.h
         - file: ./amazon-freertos/demos/include/aws_iot_metrics.h
-        - file: ./amazon-freertos/demos/include/iot_config_common.h
-        - file: ./amazon-freertos/demos/include/iot_demo_logging.h
-    - group: demos_network_manager
-      files:
-        - file: ./amazon-freertos/demos/network_manager/iot_network_manager_private.h
-        - file: ./amazon-freertos/demos/network_manager/aws_iot_network_manager.c
     - group: demos_common_pkcs11_helpers
       files:
         - file: ./amazon-freertos/demos/common/pkcs11_helpers/pkcs11_helpers.h
@@ -93,18 +81,6 @@ project:
     - group: libraries_3rdparty
       files:
         - file: ./amazon-freertos/libraries/3rdparty/mbedtls_config/threading_alt.h
-    - group: libraries_abstractions_platform_include
-      files:
-        - file: ./amazon-freertos/libraries/abstractions/platform/include/platform/iot_clock.h
-        - file: ./amazon-freertos/libraries/abstractions/platform/include/platform/iot_network.h
-        - file: ./amazon-freertos/libraries/abstractions/platform/include/platform/iot_threads.h
-        - file: ./amazon-freertos/libraries/abstractions/platform/include/types/iot_network_types.h
-        - file: ./amazon-freertos/libraries/abstractions/platform/include/types/iot_platform_types.h
-    - group: libraries_abstractions_platform_freertos
-      files:
-        - file: ./amazon-freertos/libraries/abstractions/platform/freertos/include/platform/iot_platform_types_freertos.h
-        - file: ./amazon-freertos/libraries/abstractions/platform/freertos/iot_threads_freertos.c
-        - file: ./amazon-freertos/libraries/abstractions/platform/freertos/iot_clock_freertos.c
     - group: libraries_abstractions_secure_sockets
       files:
         - file: ./amazon-freertos/libraries/abstractions/secure_sockets/include/iot_secure_sockets.h
@@ -113,38 +89,11 @@ project:
       files:
         - file: ./amazon-freertos/libraries/abstractions/transport/secure_sockets/transport_secure_sockets.h
         - file: ./amazon-freertos/libraries/abstractions/transport/secure_sockets/transport_secure_sockets.c
-    - group: libraries_abstractions_wifi
-      files:
-        - file: ./amazon-freertos/libraries/abstractions/wifi/include/iot_wifi.h
-    - group: libraries_c_sdk_standard_common_include
-      files:
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/iot_atomic.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/iot_init.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/iot_linear_containers.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/iot_logging_setup.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/iot_taskpool.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/private/iot_default_root_certificates.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/private/iot_error.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/private/iot_lib_init.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/private/iot_logging.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/private/iot_static_memory.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/private/iot_taskpool_internal.h
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/include/types/iot_taskpool_types.h
-    - group: libraries_c_sdk_standard_common
-      files:
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/iot_device_metrics.c
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/iot_init.c
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/iot_static_memory_common.c
-    - group: libraries_c_sdk_standard_common_taskpool
-      files:
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/taskpool/iot_taskpool.c
-        - file: ./amazon-freertos/libraries/c_sdk/standard/common/taskpool/iot_taskpool_static_memory.c
     - group: libraries_logging
       files:
         - file: ./amazon-freertos/libraries/logging/include/iot_logging_task.h
         - file: ./amazon-freertos/libraries/logging/include/logging_levels.h
         - file: ./amazon-freertos/libraries/logging/include/logging_stack.h
-        - file: ./amazon-freertos/libraries/logging/iot_logging.c
         - file: ./amazon-freertos/libraries/logging/iot_logging_task_dynamic_buffers.c
     - group: libraries_freertos_plus_standard_crypto
       files:

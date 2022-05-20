@@ -50,9 +50,9 @@
  */
 #include <stdint.h>
 #include <stddef.h>
+#include "FreeRTOS.h"
 #include "iot_secure_sockets_config.h"
 #include "iot_secure_sockets_config_defaults.h"
-#include "iot_lib_init.h"
 
 /**
  * @ingroup SecureSockets_datatypes_handles
