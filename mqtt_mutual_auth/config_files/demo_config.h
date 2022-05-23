@@ -24,33 +24,42 @@
  *
  */
 
-#ifndef MQTT_DEMO_MUTUAL_AUTH_CONFIG_H
-#define MQTT_DEMO_MUTUAL_AUTH_CONFIG_H
+#ifndef DEMO_CONFIG_H
+#define DEMO_CONFIG_H
 
-/**************************************************/
-/******* DO NOT CHANGE the following order ********/
-/**************************************************/
+#include "core_mqtt.h"
 
-/* Include logging header files and define logging macros in the following order:
- * 1. Include the header file "logging_levels.h".
- * 2. Define the LIBRARY_LOG_NAME and LIBRARY_LOG_LEVEL macros depending on
- * the logging configuration for DEMO.
- * 3. Include the header file "logging_stack.h", if logging is enabled for DEMO.
+/**
+ * @brief The name of the operating system that the application is running on.
+ * The current value is given as an example. Please update for your specific
+ * operating system.
  */
+#define democonfigOS_NAME       "FreeRTOS"
 
-#include "logging_levels.h"
+/**
+ * @brief The version of the operating system that the application is running
+ * on. The current value is given as an example. Please update for your specific
+ * operating system version.
+ */
+#define democonfigOS_VERSION    "V10.4.3"
 
-/* Logging configuration for the Demo. */
-#ifndef LIBRARY_LOG_NAME
-    #define LIBRARY_LOG_NAME    "MQTT_MutualAuth_Demo"
-#endif
+/**
+ * @brief The name of the MQTT library used and its version, following an "@"
+ * symbol.
+ */
+#define democonfigMQTT_LIB      "core-mqtt@" MQTT_LIBRARY_VERSION
 
-#ifndef LIBRARY_LOG_LEVEL
-    #define LIBRARY_LOG_LEVEL    LOG_INFO
-#endif
-#include "logging_stack.h"
+/**
+ * @brief The MQTT metrics string expected by AWS IoT.
+ */
+#define democonfigMQTT_USERNAME                               \
+    "?SDK=" democonfigOS_NAME "&Version=" democonfigOS_VERSION \
+    "&MQTTLib=" democonfigMQTT_LIB
 
-/************ End of logging configuration ****************/
+/**
+ * @brief The length of the MQTT metrics string expected by AWS IoT.
+ */
+#define democonfigMQTT_USERNAME_LENGTH    ( ( uint16_t ) ( sizeof( democonfigMQTT_USERNAME ) - 1 ) )
 
 /**
  * To use this demo, please configure the client's certificate and private key
@@ -125,4 +134,6 @@
  * #define democonfigMQTT_MAX_DEMO_COUNT    ( insert here )
  */
 
-#endif /* MQTT_DEMO_MUTUAL_AUTH_CONFIG_H */
+
+
+#endif /* DEMO_CONFIG_H */

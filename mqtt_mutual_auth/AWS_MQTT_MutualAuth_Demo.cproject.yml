@@ -67,7 +67,7 @@ project:
         - file: ./config_files/FreeRTOSIPConfig.h
         - file: ./config_files/iot_config.h
         - file: ./config_files/iot_secure_sockets_config.h
-        - file: ./config_files/mqtt_demo_mutual_auth_config.h
+        - file: ./config_files/demo_config.h
     - group: demos_include
       files:
         - file: ./amazon-freertos/demos/include/aws_clientcredential.h

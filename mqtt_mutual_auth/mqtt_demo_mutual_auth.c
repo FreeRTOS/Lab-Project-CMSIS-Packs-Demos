@@ -51,8 +51,7 @@
 #include <stdlib.h>
 
 /* Demo Specific configs. */
-#include "mqtt_demo_mutual_auth_config.h"
-
+#include "demo_config.h"
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
@@ -83,47 +82,11 @@
 #include "aws_iot_metrics.h"
 
 /*------------- Demo configurations -------------------------*/
-
-/** Note: The device client certificate and private key credentials are
- * obtained by the transport interface implementation (with Secure Sockets)
- * from the demos/include/aws_clientcredential_keys.h file.
- *
- * The following macros SHOULD be defined for this demo which uses both server
- * and client authentications for TLS session:
- *   - keyCLIENT_CERTIFICATE_PEM for client certificate.
- *   - keyCLIENT_PRIVATE_KEY_PEM for client private key.
- */
-
-/**
- * @brief The MQTT broker endpoint used for this demo.
- */
-#ifndef democonfigMQTT_BROKER_ENDPOINT
-    #define democonfigMQTT_BROKER_ENDPOINT    clientcredentialMQTT_BROKER_ENDPOINT
-#endif
-
 /**
  * @brief The root CA certificate belonging to the broker.
  */
 #ifndef democonfigROOT_CA_PEM
     #define democonfigROOT_CA_PEM    tlsATS1_ROOT_CERTIFICATE_PEM
-#endif
-
-#ifndef democonfigCLIENT_IDENTIFIER
-
-/**
- * @brief The MQTT client identifier used in this example.  Each client identifier
- * must be unique so edit as required to ensure no two clients connecting to the
- * same broker use the same client identifier.
- */
-    #define democonfigCLIENT_IDENTIFIER    clientcredentialIOT_THING_NAME
-#endif
-
-#ifndef democonfigMQTT_BROKER_PORT
-
-/**
- * @brief The port to use for the demo.
- */
-    #define democonfigMQTT_BROKER_PORT    clientcredentialMQTT_BROKER_PORT
 #endif
 
 /**
@@ -803,8 +766,8 @@ static BaseType_t prvCreateMQTTConnectionWithBroker( MQTTContext_t * pxMQTTConte
 
     /* Use the metrics string as username to report the OS and MQTT client version
      * metrics to AWS IoT. */
-    xConnectInfo.pUserName = AWS_IOT_METRICS_STRING;
-    xConnectInfo.userNameLength = AWS_IOT_METRICS_STRING_LENGTH;
+    xConnectInfo.pUserName = democonfigMQTT_USERNAME;
+    xConnectInfo.userNameLength = democonfigMQTT_USERNAME_LENGTH;
 
     /* Set MQTT keep-alive period. If the application does not send packets at an interval less than
      * the keep-alive period, the MQTT library will send PINGREQ packets. */
