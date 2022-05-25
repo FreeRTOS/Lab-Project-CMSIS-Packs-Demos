@@ -24,68 +24,41 @@
  */
 
 /**
- * @file transport_secure_sockets.h
- * @brief Secure Sockets based API for transport interface implementation.
+ * @file transport_sockets.h
+ * @brief Socket based API for transport interface implementation.
  */
 
-#ifndef TRANSPORT_SECURE_SOCKETS_H
-#define TRANSPORT_SECURE_SOCKETS_H
+#ifndef TRANSPORT_INTERFACE_EXT_H
+#define TRANSPORT_INTERFACE_EXT_H
 
-/* bool is defined in only C99+. */
-#if defined( __cplusplus ) || ( defined( __STDC_VERSION__ ) && ( __STDC_VERSION__ >= 199901L ) )
-    #include <stdbool.h>
-#elif !defined( bool ) && !defined( false ) && !defined( true )
-    #define bool     int8_t
-    #define false    ( int8_t ) 0
-    #define true     ( int8_t ) 1
-#endif
-/** @endcond */
-
-/* Transport interface include. */
+#include <stdint.h>
+#include <stdbool.h>
 #include "transport_interface.h"
-#include "iot_secure_sockets.h"
 
-/* Kernel include. */
-#include "FreeRTOS.h"
-#include "task.h"
 
-/* Include header that defines log levels. */
-#include "logging_levels.h"
-
-/* Logging configuration for the transport interface implementation which uses
- * Secure Sockets. */
-#ifndef LIBRARY_LOG_NAME
-    #define LIBRARY_LOG_NAME     "Transport_Secure_Sockets"
-#endif
-#ifndef LIBRARY_LOG_LEVEL
-    #define LIBRARY_LOG_LEVEL    LOG_ERROR
-#endif
-
-/* Logging implementation header include. */
-#include "logging_stack.h"
-
-/**
- * @brief Definition of the network context for the transport interface
- * implementation that uses Secure Sockets API.
- */
-typedef struct SecureSocketsTransportParams
+struct NetworkContext
 {
-    Socket_t tcpSocket;
-} SecureSocketsTransportParams_t;
+    int32_t socket;
+    void * pTLSContext;
+    bool useTLS;
+};
 
 /**
  * @brief TCP, TLS Connect / Disconnect return status.
  */
-typedef enum TransportSocketStatus
+typedef enum TransportStatus
 {
-    TRANSPORT_SOCKET_STATUS_SUCCESS = 0,         /**< Function successfully completed. */
-    TRANSPORT_SOCKET_STATUS_INVALID_PARAMETER,   /**< At least one parameter was invalid. */
-    TRANSPORT_SOCKET_STATUS_INSUFFICIENT_MEMORY, /**< Insufficient memory required to establish connection. */
-    TRANSPORT_SOCKET_STATUS_CREDENTIALS_INVALID, /**< Provided credentials were invalid. */
-    TRANSPORT_SOCKET_STATUS_INTERNAL_ERROR,      /**< A call to a system API resulted in an internal error. */
-    TRANSPORT_SOCKET_STATUS_DNS_FAILURE,         /**< Resolving hostname of the server failed. */
-    TRANSPORT_SOCKET_STATUS_CONNECT_FAILURE      /**< Initial connection to the server failed. */
-} TransportSocketStatus_t;
+    TRANSPORT_STATUS_SUCCESS = 0,           /**< Function successfully completed. */
+    TRANSPORT_STATUS_INVALID_PARAMETER,     /**< At least one parameter was invalid. */
+    TRANSPORT_STATUS_INSUFFICIENT_MEMORY,   /**< Insufficient memory required to establish connection. */
+    TRANSPORT_STATUS_CREDENTIALS_INVALID,   /**< Provided credentials were invalid. */
+    TRANSPORT_STATUS_INTERNAL_ERROR,        /**< A call to a system API resulted in an internal error. */
+    TRANSPORT_STATUS_DNS_FAILURE,           /**< Resolving hostname of the server failed. */
+    TRANSPORT_STATUS_SOCKET_CREATE_FAILURE, /**< Underlying socket creation failed. */
+    TRANSPORT_STATUS_CONNECT_FAILURE,       /**< Initial connection to the server failed. */
+    TRANSPORT_STATUS_TLS_FAILURE,          /**< TLS Handshake for the secure connection failed. */
+    TRANSPORT_STATUS_SOCKET_CLOSE_FAILURE   /**< Failed to close the underlying socket. */
+} TransportStatus_t;
 
 
 /**
@@ -103,7 +76,7 @@ typedef struct ServerInfo
  * @brief Contains the credentials necessary for connection setup.
  *
  */
-typedef struct SocketsConfig
+typedef struct TLSConfig
 {
     bool enableTls;         /**< @brief Whether require TLS for the transport. */
     uint32_t sendTimeoutMs; /**< @brief Timeout for transport send. */
@@ -135,8 +108,8 @@ typedef struct SocketsConfig
     size_t maxFragmentLength;
 
     const char * pRootCa; /**< @brief String representing a trusted server Root CA certificate. */
-    size_t rootCaSize;    /**< @brief Size associated with #SocketsConfig_t.pRootCa. */
-} SocketsConfig_t;
+    size_t rootCaSize;    /**< @brief SizeSecureSocketsTransport_Connect associated with #SocketsConfig_t.pRootCa. */
+} TLSConfig_t;
 
 
 /**
@@ -146,14 +119,14 @@ typedef struct SocketsConfig
  * @param[in] pServerInfo Server connection info.
  * @param[in] pSocketsConfig socket configs for the connection.
  *
- * @return #TRANSPORT_SOCKET_STATUS_SUCCESS on success;
- *         #TRANSPORT_SOCKET_STATUS_INVALID_PARAMETER, #TRANSPORT_SOCKET_STATUS_INSUFFICIENT_MEMORY,
- *         #TRANSPORT_SOCKET_STATUS_CREDENTIALS_INVALID, #TRANSPORT_SOCKET_STATUS_INTERNAL_ERROR,
- *         #TRANSPORT_SOCKET_STATUS_DNS_FAILURE, #TRANSPORT_SOCKET_STATUS_CONNECT_FAILURE on failure.
+ * @return #TRANSPORT_STATUS_SUCCESS on success;
+ *         #TRANSPORT_STATUS_INVALID_PARAMETER, #TRANSPORT_STATUS_INSUFFICIENT_MEMORY,
+ *         #TRANSPORT_STATUS_CREDENTIALS_INVALID, #TRANSPORT_STATUS_INTERNAL_ERROR,
+ *         #TRANSPORT_STATUS_DNS_FAILURE, #TRANSPORT_STATUS_CONNECT_FAILURE on failure.
  */
-TransportSocketStatus_t SecureSocketsTransport_Connect( NetworkContext_t * pNetworkContext,
-                                                        const ServerInfo_t * pServerInfo,
-                                                        const SocketsConfig_t * pSocketsConfig );
+TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
+                                           const ServerInfo_t * pServerInfo,
+                                           const TLSConfig_t * pTLSConfig );
 
 /**
  * @brief Closes a TLS session on top of a TCP connection using the Secure Sockets API.
@@ -161,10 +134,10 @@ TransportSocketStatus_t SecureSocketsTransport_Connect( NetworkContext_t * pNetw
  * @param[out] pNetworkContext The output parameter to end the TLS session and
  *             clean the created network context.
  *
- * @return #TRANSPORT_SOCKET_STATUS_SUCCESS on success;
- *         #TRANSPORT_SOCKET_STATUS_INVALID_PARAMETER, #TRANSPORT_SOCKET_STATUS_INTERNAL_ERROR on failure.
+ * @return #TRANSPORT_STATUS_SUCCESS on success;
+ *         #TRANSPORT_STATUS_INVALID_PARAMETER, #TRANSPORT_STATUS_INTERNAL_ERROR on failure.
  */
-TransportSocketStatus_t SecureSocketsTransport_Disconnect( const NetworkContext_t * pNetworkContext );
+TransportStatus_t Transport_Disconnect( const NetworkContext_t * pNetworkContext );
 
 
 /**
@@ -181,9 +154,9 @@ TransportSocketStatus_t SecureSocketsTransport_Disconnect( const NetworkContext_
  *         0 if the socket times out without reading any bytes;
  *         negative value on error.
  */
-int32_t SecureSocketsTransport_Recv( NetworkContext_t * pNetworkContext,
-                                     void * pBuffer,
-                                     size_t bytesToRecv );
+int32_t Transport_Recv( NetworkContext_t * pNetworkContext,
+                              void * pBuffer,
+                              size_t bytesToRecv );
 
 /**
  * @brief Sends data over an established TLS session using the Secure Sockets API.
@@ -197,8 +170,8 @@ int32_t SecureSocketsTransport_Recv( NetworkContext_t * pNetworkContext,
  *
  * @return Number of bytes sent if successful; negative value on error.
  */
-int32_t SecureSocketsTransport_Send( NetworkContext_t * pNetworkContext,
-                                     const void * pMessage,
-                                     size_t bytesToSend );
+int32_t Transport_Send( NetworkContext_t * pNetworkContext,
+                              const void * pMessage,
+                              size_t bytesToSend );
 
-#endif /* TRANSPORT_SECURE_SOCKETS_H */
+#endif /* TRANSPORT_INTERFACE_EXT_H */

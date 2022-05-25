@@ -67,19 +67,13 @@
 #include "pkcs11_helpers.h"
 
 /* Transport interface implementation include header for TLS. */
-#include "transport_secure_sockets.h"
-
-/* Include header for connection configurations. */
-#include "aws_clientcredential.h"
+#include "transport_interface_ext.h"
 
 /* Include header for client credentials. */
 #include "aws_clientcredential_keys.h"
 
 /* Include header for root CA certificates. */
 #include "iot_default_root_certificates.h"
-
-/* Include AWS IoT metrics macros header. */
-#include "aws_iot_metrics.h"
 
 /*------------- Demo configurations -------------------------*/
 /**
@@ -189,20 +183,6 @@
  * @brief Milliseconds per FreeRTOS tick.
  */
 #define MILLISECONDS_PER_TICK                             ( MILLISECONDS_PER_SECOND / configTICK_RATE_HZ )
-
-/*-----------------------------------------------------------*/
-
-/**
- * @brief Each compilation unit that consumes the NetworkContext must define it.
- * It should contain a single pointer to the type of your desired transport.
- * When using multiple transports in the same compilation unit, define this pointer as void *.
- *
- * @note Transport stacks are defined in amazon-freertos/libraries/abstractions/transport/secure_sockets/transport_secure_sockets.h.
- */
-struct NetworkContext
-{
-    SecureSocketsTransportParams_t * pParams;
-};
 
 /*-----------------------------------------------------------*/
 
@@ -443,9 +423,8 @@ void vCoreMQTTMutualAuthDemoTask( void * pvParam )
     MQTTContext_t xMQTTContext = { 0 };
     MQTTStatus_t xMQTTStatus;
     uint32_t ulDemoRunCount = 0UL, ulDemoSuccessCount = 0UL;
-    TransportSocketStatus_t xNetworkStatus;
+    TransportStatus_t xNetworkStatus;
     BaseType_t xIsConnectionEstablished = pdFALSE;
-    SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
     BaseType_t xDemoStatus = pdFAIL;
 
     ( void ) pvParam;
@@ -456,7 +435,6 @@ void vCoreMQTTMutualAuthDemoTask( void * pvParam )
      * by the timer utility function that is provided to the MQTT library.
      */
     ulGlobalEntryTimeMs = prvGetTimeMs();
-    xNetworkContext.pParams = &secureSocketsTransportParams;
 
     for( ulDemoRunCount = 0UL; ( ulDemoRunCount < democonfigMQTT_MAX_DEMO_COUNT ); ulDemoRunCount++ )
     {
@@ -557,12 +535,12 @@ void vCoreMQTTMutualAuthDemoTask( void * pvParam )
         if( xIsConnectionEstablished == pdTRUE )
         {
             /* Close the network connection.  */
-            xNetworkStatus = SecureSocketsTransport_Disconnect( &xNetworkContext );
+            xNetworkStatus = Transport_Disconnect( &xNetworkContext );
 
-            if( xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS )
+            if( xNetworkStatus != TRANSPORT_STATUS_SUCCESS )
             {
                 xDemoStatus = pdFAIL;
-                LogError( ( "SecureSocketsTransport_Disconnect() failed to close the network connection. "
+                LogError( ( "Transport_Disconnect() failed to close the network connection. "
                             "StatusCode=%d.", ( int ) xNetworkStatus ) );
             }
         }
@@ -671,8 +649,8 @@ static BaseType_t prvConnectToServerWithBackoffRetries( NetworkContext_t * pxNet
 {
     ServerInfo_t xServerInfo = { 0 };
 
-    SocketsConfig_t xSocketsConfig = { 0 };
-    TransportSocketStatus_t xNetworkStatus = TRANSPORT_SOCKET_STATUS_SUCCESS;
+    TLSConfig_t xTLSConfig = { 0 };
+    TransportStatus_t xNetworkStatus = TRANSPORT_STATUS_SUCCESS;
     BackoffAlgorithmContext_t xReconnectParams;
     BaseType_t xBackoffStatus = pdFALSE;
 
@@ -683,14 +661,14 @@ static BaseType_t prvConnectToServerWithBackoffRetries( NetworkContext_t * pxNet
     xServerInfo.port = democonfigMQTT_BROKER_PORT;
 
     /* Configure credentials for TLS mutual authenticated session. */
-    xSocketsConfig.enableTls = true;
-    xSocketsConfig.pAlpnProtos = NULL;
-    xSocketsConfig.maxFragmentLength = 0;
-    xSocketsConfig.disableSni = false;
-    xSocketsConfig.pRootCa = democonfigROOT_CA_PEM;
-    xSocketsConfig.rootCaSize = sizeof( democonfigROOT_CA_PEM );
-    xSocketsConfig.sendTimeoutMs = mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS;
-    xSocketsConfig.recvTimeoutMs = mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS;
+    xTLSConfig.enableTls = true;
+    xTLSConfig.pAlpnProtos = NULL;
+    xTLSConfig.maxFragmentLength = 0;
+    xTLSConfig.disableSni = false;
+    xTLSConfig.pRootCa = democonfigROOT_CA_PEM;
+    xTLSConfig.rootCaSize = sizeof( democonfigROOT_CA_PEM );
+    xTLSConfig.sendTimeoutMs = mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS;
+    xTLSConfig.recvTimeoutMs = mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS;
 
     /* Initialize reconnect attempts and interval. */
     BackoffAlgorithm_InitializeParams( &xReconnectParams,
@@ -711,11 +689,11 @@ static BaseType_t prvConnectToServerWithBackoffRetries( NetworkContext_t * pxNet
                    democonfigMQTT_BROKER_ENDPOINT,
                    democonfigMQTT_BROKER_PORT ) );
         /* Attempt to create a mutually authenticated TLS connection. */
-        xNetworkStatus = SecureSocketsTransport_Connect( pxNetworkContext,
-                                                         &xServerInfo,
-                                                         &xSocketsConfig );
+        xNetworkStatus = Transport_Connect( pxNetworkContext,
+                                            &xServerInfo,
+                                             &xTLSConfig );
 
-        if( xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS )
+        if( xNetworkStatus != TRANSPORT_STATUS_SUCCESS )
         {
             LogWarn( ( "Connection to the broker failed. Attempting connection retry after backoff delay." ) );
 
@@ -725,9 +703,9 @@ static BaseType_t prvConnectToServerWithBackoffRetries( NetworkContext_t * pxNet
             /* Calculate the backoff period for the next retry attempt and perform the wait operation. */
             xBackoffStatus = prvBackoffForRetry( &xReconnectParams );
         }
-    } while( ( xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS ) && ( xBackoffStatus == pdPASS ) );
+    } while( ( xNetworkStatus != TRANSPORT_STATUS_SUCCESS ) && ( xBackoffStatus == pdPASS ) );
 
-    return ( xNetworkStatus == TRANSPORT_SOCKET_STATUS_SUCCESS ) ? pdPASS : pdFAIL;
+    return ( xNetworkStatus == TRANSPORT_STATUS_SUCCESS ) ? pdPASS : pdFAIL;
 }
 /*-----------------------------------------------------------*/
 
@@ -742,8 +720,8 @@ static BaseType_t prvCreateMQTTConnectionWithBroker( MQTTContext_t * pxMQTTConte
 
     /* Fill in Transport Interface send and receive function pointers. */
     xTransport.pNetworkContext = pxNetworkContext;
-    xTransport.send = SecureSocketsTransport_Send;
-    xTransport.recv = SecureSocketsTransport_Recv;
+    xTransport.send = Transport_Send;
+    xTransport.recv = Transport_Recv;
 
     /* Initialize MQTT library. */
     xResult = MQTT_Init( pxMQTTContext, &xTransport, prvGetTimeMs, prvEventCallback, &xBuffer );
@@ -1140,6 +1118,7 @@ static MQTTStatus_t prvWaitForPacket( MQTTContext_t * pxMQTTContext,
         /* Event callback will set #usPacketTypeReceived when receiving appropriate packet. This
          * will wait for at most mqttexamplePROCESS_LOOP_TIMEOUT_MS. */
         xMQTTStatus = MQTT_ProcessLoop( pxMQTTContext, mqttexamplePROCESS_LOOP_TIMEOUT_MS );
+        LogInfo(("Packet type received %d, expected %d, status %d", usPacketTypeReceived, usPacketType, xMQTTStatus ));
     }
 
     if( ( xMQTTStatus != MQTTSuccess ) || ( usPacketTypeReceived != usPacketType ) )

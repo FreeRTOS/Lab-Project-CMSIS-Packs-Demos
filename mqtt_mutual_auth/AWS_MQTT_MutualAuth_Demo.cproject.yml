@@ -17,14 +17,10 @@ project:
   
   add-paths:
     - ./config_files
-    - ./amazon-freertos/demos/include
-    - ./amazon-freertos/demos/common/pkcs11_helpers
-    - ./amazon-freertos/libraries/3rdparty/mbedtls_config
-    - ./amazon-freertos/libraries/logging/include
-    - ./amazon-freertos/libraries/abstractions/secure_sockets/include
-    - ./amazon-freertos/libraries/abstractions/transport/secure_sockets
-    - ./amazon-freertos/libraries/freertos_plus/standard/crypto/include
-    - ./amazon-freertos/libraries/freertos_plus/standard/tls/include
+    - ./tls
+    - ./crypto
+    - ./pkcs11
+    - ./logging/include
 
   misc:
     - C*:
@@ -59,6 +55,7 @@ project:
       files:
         - file: ./app_main.c
         - file: ./mqtt_demo_mutual_auth.c
+        - file: ./transport_interface_ext.h
     - group: config_files
       files:
         - file: ./config_files/aws_mbedtls_config.h
@@ -68,45 +65,26 @@ project:
         - file: ./config_files/iot_config.h
         - file: ./config_files/iot_secure_sockets_config.h
         - file: ./config_files/demo_config.h
-    - group: demos_include
+    - group: pkcs11
       files:
-        - file: ./amazon-freertos/demos/include/aws_clientcredential.h
-        - file: ./amazon-freertos/demos/include/aws_clientcredential_keys.h
-        - file: ./amazon-freertos/demos/include/iot_default_root_certificates.h
-        - file: ./amazon-freertos/demos/include/aws_iot_metrics.h
-    - group: demos_common_pkcs11_helpers
+        - file: ./pkcs11/core_pkcs11_pal.c
+        - file: ./pkcs11/pkcs11_helpers.h
+        - file: ./pkcs11/pkcs11_helpers.c
+    - group: crypto
       files:
-        - file: ./amazon-freertos/demos/common/pkcs11_helpers/pkcs11_helpers.h
-        - file: ./amazon-freertos/demos/common/pkcs11_helpers/pkcs11_helpers.c
-    - group: libraries_3rdparty
+        - file: ./crypto/iot_crypto.h
+        - file: ./crypto/iot_crypto.c
+        - file: ./crypto/threading_alt.h
+    - group: logging
       files:
-        - file: ./amazon-freertos/libraries/3rdparty/mbedtls_config/threading_alt.h
-    - group: libraries_abstractions_secure_sockets
+        - file: ./logging/include/iot_logging_task.h
+        - file: ./logging/include/logging_levels.h
+        - file: ./logging/include/logging_stack.h
+        - file: ./logging/iot_logging_task_dynamic_buffers.c
+    - group: tls
       files:
-        - file: ./amazon-freertos/libraries/abstractions/secure_sockets/include/iot_secure_sockets.h
-        - file: ./amazon-freertos/libraries/abstractions/secure_sockets/include/iot_secure_sockets_config_defaults.h
-    - group: libraries_abstractions_transport_secure_sockets
-      files:
-        - file: ./amazon-freertos/libraries/abstractions/transport/secure_sockets/transport_secure_sockets.h
-        - file: ./amazon-freertos/libraries/abstractions/transport/secure_sockets/transport_secure_sockets.c
-    - group: libraries_logging
-      files:
-        - file: ./amazon-freertos/libraries/logging/include/iot_logging_task.h
-        - file: ./amazon-freertos/libraries/logging/include/logging_levels.h
-        - file: ./amazon-freertos/libraries/logging/include/logging_stack.h
-        - file: ./amazon-freertos/libraries/logging/iot_logging_task_dynamic_buffers.c
-    - group: libraries_freertos_plus_standard_crypto
-      files:
-        - file: ./amazon-freertos/libraries/freertos_plus/standard/crypto/include/iot_crypto.h
-        - file: ./amazon-freertos/libraries/freertos_plus/standard/crypto/src/iot_crypto.c
-    - group: libraries_freertos_plus_standard_tls
-      files:
-        - file: ./amazon-freertos/libraries/freertos_plus/standard/tls/include/iot_tls.h
-        - file: ./amazon-freertos/libraries/freertos_plus/standard/tls/src/iot_tls.c
-    - group: ports
-      files:
-        - file: ./amazon-freertos/ports/pkcs11/core_pkcs11_pal.c
-
+        - file: ./tls/iot_tls.h
+        - file: ./tls/iot_tls.c
   layers:
     - layer: ./Board/AVH_MPS2_Cortex-M7/Board.clayer.yml
       for-type: 
@@ -125,14 +103,9 @@ project:
         - +AVH_MPS2_Cortex-M7
         - +AVH_MPS3_Corstone-300
 
-    - layer: ./Interface/AWS/FreeRTOS+TCP/Interface.clayer.yml
-      for-type:
-        - +IMXRT1050-EVKB
     - layer: ./Interface/AWS/Socket/Interface.clayer.yml
       for-type:
         - +AVH_MPS2_Cortex-M7
         - +AVH_MPS3_Corstone-300
-    - layer: ./Interface/AWS/WiFi/Interface.clayer.yml
-      for-type:
-        - +IMXRT1050-EVKB_ESP8266
-        - +IMXRT1050-EVKB_WizFi360
+        
+  

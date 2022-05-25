@@ -12,14 +12,8 @@ layer:
   #   - provides:
   #     - AWS_Socket:
 
-  add-paths:
-    - ../../../config_files/Socket
-
   groups:
-    - group: config_files_Interface
-      files:
-        - file: ../../../config_files/Socket/aws_iot_network_config.h
     - group: Interface_AWS
       files:
         - file: ./network_startup.c
-        - file: ./iot_secure_sockets.c
+        - file: ./transport_interface_iot_socket.c
