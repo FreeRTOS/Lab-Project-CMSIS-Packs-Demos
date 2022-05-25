@@ -55,7 +55,7 @@ project:
       files:
         - file: ./app_main.c
         - file: ./mqtt_demo_mutual_auth.c
-        - file: ./transport_interface_ext.h
+        - file: ./transport_interface_api.h
     - group: config_files
       files:
         - file: ./config_files/aws_mbedtls_config.h
@@ -63,7 +63,6 @@ project:
         - file: ./config_files/core_pkcs11_config.h
         - file: ./config_files/FreeRTOSIPConfig.h
         - file: ./config_files/iot_config.h
-        - file: ./config_files/iot_secure_sockets_config.h
         - file: ./config_files/demo_config.h
     - group: pkcs11
       files:
@@ -103,7 +102,7 @@ project:
         - +AVH_MPS2_Cortex-M7
         - +AVH_MPS3_Corstone-300
 
-    - layer: ./Interface/AWS/Socket/Interface.clayer.yml
+    - layer: ./Interface/transport/IoT_Socket/Interface.clayer.yml
       for-type:
         - +AVH_MPS2_Cortex-M7
         - +AVH_MPS3_Corstone-300

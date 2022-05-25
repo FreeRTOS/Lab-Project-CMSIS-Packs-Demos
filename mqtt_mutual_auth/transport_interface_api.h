@@ -28,8 +28,8 @@
  * @brief Socket based API for transport interface implementation.
  */
 
-#ifndef TRANSPORT_INTERFACE_EXT_H
-#define TRANSPORT_INTERFACE_EXT_H
+#ifndef TRANSPORT_INTERFACE_API_H
+#define TRANSPORT_INTERFACE_API_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -174,4 +174,4 @@ int32_t Transport_Send( NetworkContext_t * pNetworkContext,
                               const void * pMessage,
                               size_t bytesToSend );
 
-#endif /* TRANSPORT_INTERFACE_EXT_H */
+#endif /* TRANSPORT_INTERFACE_API_H */

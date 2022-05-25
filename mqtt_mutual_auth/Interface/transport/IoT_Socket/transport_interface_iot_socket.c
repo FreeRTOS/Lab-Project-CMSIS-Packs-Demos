@@ -32,7 +32,7 @@
 #include <string.h>
 #include "FreeRTOS.h"
 
-#include "transport_interface_ext.h"
+#include "transport_interface_api.h"
 #include "iot_socket.h"
 #include "iot_tls.h"
 
@@ -204,7 +204,6 @@ static int32_t Recv_Cb (void *pvCallerContext, unsigned char * pucReceiveBuffer,
         rc = iotSocketRecv (pNetworkContext->socket, pucReceiveBuffer, xReceiveLength);
         if (rc < 0)
         {
-            LogError(("Failed to read data from socket with error %d", rc ));
             if( rc == IOT_SOCKET_EAGAIN )
             {
                 /* There was no data on a non-blocking socket, or operation timedout on a blocking socket. */
@@ -236,10 +235,6 @@ static int32_t Send_Cb (void *pvCallerContext, const unsigned char *pucData, siz
     else
     {
         rc = iotSocketSend (pNetworkContext->socket, pucData, xDataLength);
-        if( rc < 0 )
-        {
-            LogError(("Failed to send data over socket with error %d", rc));
-        }
     }
     
     return (rc);

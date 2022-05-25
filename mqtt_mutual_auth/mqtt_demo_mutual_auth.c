@@ -67,7 +67,7 @@
 #include "pkcs11_helpers.h"
 
 /* Transport interface implementation include header for TLS. */
-#include "transport_interface_ext.h"
+#include "transport_interface_api.h"
 
 /* Include header for client credentials. */
 #include "aws_clientcredential_keys.h"
