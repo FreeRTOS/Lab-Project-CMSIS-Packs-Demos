@@ -289,6 +289,6 @@ void vLoggingPrintf( const char * pcFormat, ... );
 /* The application defines the array used for the FreeRTOS */
 #define configAPPLICATION_ALLOCATED_HEAP        1
 #define configHEAP_REGION0_ADDR                 0
-#define configHEAP_REGION0_SIZE                 0xD000
+#define configHEAP_REGION0_SIZE                 0x1E000
 
 #endif /* FREERTOS_CONFIG_H */

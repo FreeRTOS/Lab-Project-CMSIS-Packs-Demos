@@ -76,7 +76,7 @@ typedef struct ServerInfo
  * @brief Contains the credentials necessary for connection setup.
  *
  */
-typedef struct TLSParamsßß
+typedef struct TLSParams
 {
     /**
      * @brief Set this to a non-NULL value to use ALPN.

@@ -24,6 +24,7 @@
 #include "iot_logging_task.h"
 #include "mbedtls/threading.h"
 #include "threading_alt.h"
+#include "mqtt_agent_task.h"
 
 
 /* Set logging task as high priority task */
@@ -37,6 +38,26 @@
  */
 #define MQTT_MUTUAL_AUTH_DEMO_TASK_STACK_SIZE     ( 4096 )
 #define MQTT_MUTUAL_AUTH_DEMO_TASK_PRIORITY       ( tskIDLE_PRIORITY + 1)
+
+/**
+ * @brief Subscribe Publish demo tasks configuration.
+ * Subscribe publish demo task shows the basic functionality of connecting to an MQTT broker, subscribing
+ * to a topic, publishing messages to a topic and reporting the incoming messages on subscribed topic.
+ * Number of subscribe publish demo tasks to be spawned is configurable.
+ */
+#define appmainMQTT_NUM_PUBSUB_TASKS              ( 2 )
+#define appmainMQTT_PUBSUB_TASK_STACK_SIZE        ( 2048 )
+#define appmainMQTT_PUBSUB_TASK_PRIORITY          ( tskIDLE_PRIORITY + 1 )
+
+/**
+ * @brief Stack size and priority for MQTT agent task.
+ * Stack size is capped to an adequate value based on requirements from MbedTLS stack
+ * for establishing a TLS connection. Task priority of MQTT agent is set to a priority
+ * higher than other MQTT application tasks, so that the agent can drain the queue
+ * as work is being produced.
+ */
+#define appmainMQTT_AGENT_TASK_STACK_SIZE         ( 4096 )
+#define appmainMQTT_AGENT_TASK_PRIORITY           ( tskIDLE_PRIORITY + 2 )
 
 extern int32_t network_startup (void);
 
@@ -62,11 +83,16 @@ const HeapRegion_t xHeapRegions[] = {
 
 
 extern void vCoreMQTTMutualAuthDemoTask( void * pvParam );
+
+extern BaseType_t xStartPubSubTasks( uint32_t ulNumPubsubTasks,
+                                     configSTACK_DEPTH_TYPE uxStackSize,
+                                     UBaseType_t uxPriority );
 /*---------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
 static void app_main (void *argument) {
   int32_t status;
+  BaseType_t xResult;
 
   (void)argument;
   osThreadAttr_t taskAttr;
@@ -81,17 +107,31 @@ static void app_main (void *argument) {
                                mbedtls_platform_mutex_lock,
                                mbedtls_platform_mutex_unlock );
 
+
+    /* Uncomment this if you want to run the demo without MQTT agent. */
+ 
+    /**
     taskAttr.name = "MQTTDemo";
     taskAttr.attr_bits = osThreadDetached;
     taskAttr.stack_size = MQTT_MUTUAL_AUTH_DEMO_TASK_STACK_SIZE;
     taskAttr.priority = MQTT_MUTUAL_AUTH_DEMO_TASK_PRIORITY;
-
-    /* Start demo tasks. */
     osThreadNew(vCoreMQTTMutualAuthDemoTask, NULL, &taskAttr);
+    **/
 
+    /* Start agent task. */
+    xResult = xMQTTAgentInit( appmainMQTT_AGENT_TASK_STACK_SIZE, appmainMQTT_AGENT_TASK_PRIORITY );
+
+    //Start demo task once agent task is started.
+    if( xResult == pdPASS )
+    {
+      ( void ) xStartPubSubTasks( appmainMQTT_NUM_PUBSUB_TASKS,
+                                  appmainMQTT_PUBSUB_TASK_STACK_SIZE,
+                                  appmainMQTT_PUBSUB_TASK_PRIORITY );
+    }
     /* Wait such that task is not deleted */
-    osDelay(osWaitForever);
-    for (;;) {}
+    for (;;) {
+      osDelay(osWaitForever);
+    }
   }
 
 }

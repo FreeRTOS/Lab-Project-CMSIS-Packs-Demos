@@ -19,6 +19,7 @@ project:
     - ./config_files
     - ./logging/include
     - ./mbedtls_alt
+    - ./mqtt_agent
 
   misc:
     - C*:
@@ -42,7 +43,6 @@ project:
     - component: AWS::FreeRTOS:coreMQTT
     - component: AWS::FreeRTOS:coreMQTT Agent
 
-
   groups:
     - group: Documentation
       files: 
@@ -51,6 +51,7 @@ project:
       files:
         - file: ./app_main.c
         - file: ./mqtt_demo_mutual_auth.c
+        - file: ./mqtt_demo_pub_sub.c
         - file: ./transport_interface_api.h
     - group: config_files
       files:
@@ -70,6 +71,10 @@ project:
       files:
         - file: ./mbedtls_alt/mbedtls_freertos_alt.c
         - file: ./mbedtls_alt/threading_alt.h
+    - group: mqtt_agent
+      files:
+        - file: ./mqtt_agent/mqtt_agent_task.c
+        - file: ./mqtt_agent/mqtt_agent_task.h
   layers:
     - layer: ./Board/AVH_MPS2_Cortex-M7/Board.clayer.yml
       for-type: 
@@ -97,5 +102,9 @@ project:
       for-type:
         - +AVH_MPS2_Cortex-M7
         - +AVH_MPS3_Corstone-300
-        
+
+    - layer: ./Interface/mqtt_agent/freertos/Interface.clayer.yml
+      for-type:
+        - +AVH_MPS2_Cortex-M7
+        - +AVH_MPS3_Corstone-300 
   
