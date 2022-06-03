@@ -22,6 +22,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "iot_logging_task.h"
+#include "mbedtls/threading.h"
+#include "threading_alt.h"
 
 
 /* Set logging task as high priority task */
@@ -73,6 +75,11 @@ static void app_main (void *argument) {
 
   if (status == 0) {
     memset( &taskAttr, 0x00, sizeof( taskAttr ) );
+
+    mbedtls_threading_set_alt( mbedtls_platform_mutex_init,
+                               mbedtls_platform_mutex_free,
+                               mbedtls_platform_mutex_lock,
+                               mbedtls_platform_mutex_unlock );
 
     taskAttr.name = "MQTTDemo";
     taskAttr.attr_bits = osThreadDetached;

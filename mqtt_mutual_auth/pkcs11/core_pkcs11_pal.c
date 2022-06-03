@@ -23,7 +23,6 @@
         other non volatile memory.
 */
 
-#include "iot_crypto.h"
 #include "core_pkcs11.h"
 #include "core_pkcs11_pal.h"
 #include "core_pkcs11_config.h"
@@ -98,7 +97,6 @@ CK_RV PKCS11_PAL_Initialize (void) {
   cert->Size   = sizeof(keyCLIENT_PRIVATE_KEY_PEM);
   cert->Status = CERTIFICATE_STATUS_PRESENT | CERTIFICATE_STATUS_PRIVATE;
 
-  CRYPTO_Init();
   return CKR_OK;
 }
 

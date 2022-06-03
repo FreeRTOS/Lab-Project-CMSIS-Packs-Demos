@@ -219,16 +219,11 @@
  * Enable this layer to allow use of alternative memory allocators.
  */
 #define MBEDTLS_PLATFORM_MEMORY
-
-#ifdef CONFIG_MEDTLS_USE_AFR_MEMORY
-    #include <stddef.h>
-
-    extern void * pvCalloc( size_t xNumElements,
-                          size_t xSize ) ;
-    extern void vPortFree( void *pv );
-    #define MBEDTLS_PLATFORM_CALLOC_MACRO pvCalloc
-    #define MBEDTLS_PLATFORM_FREE_MACRO   vPortFree
-#endif
+#include <stddef.h>
+void * mbedtls_platform_calloc( size_t nmemb, size_t size );
+void mbedtls_platform_free( void * ptr );
+#define MBEDTLS_PLATFORM_CALLOC_MACRO mbedtls_platform_calloc
+#define MBEDTLS_PLATFORM_FREE_MACRO   mbedtls_platform_free
 
 /**
  * \def MBEDTLS_PLATFORM_NO_STD_FUNCTIONS

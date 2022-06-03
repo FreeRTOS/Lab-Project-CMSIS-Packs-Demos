@@ -17,9 +17,9 @@ project:
   
   add-paths:
     - ./config_files
-    - ./crypto
     - ./pkcs11
     - ./logging/include
+    - ./mbedtls_alt
 
   misc:
     - C*:
@@ -68,17 +68,16 @@ project:
         - file: ./pkcs11/core_pkcs11_pal.c
         - file: ./pkcs11/pkcs11_helpers.h
         - file: ./pkcs11/pkcs11_helpers.c
-    - group: crypto
-      files:
-        - file: ./crypto/iot_crypto.h
-        - file: ./crypto/iot_crypto.c
-        - file: ./crypto/threading_alt.h
     - group: logging
       files:
         - file: ./logging/include/iot_logging_task.h
         - file: ./logging/include/logging_levels.h
         - file: ./logging/include/logging_stack.h
         - file: ./logging/iot_logging_task_dynamic_buffers.c
+    - group: mbedtls_alt
+      files:
+        - file: ./mbedtls_alt/mbedtls_freertos_alt.c
+        - file: ./mbedtls_alt/threading_alt.h
   layers:
     - layer: ./Board/AVH_MPS2_Cortex-M7/Board.clayer.yml
       for-type: 
