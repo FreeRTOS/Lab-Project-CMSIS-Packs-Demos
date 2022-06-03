@@ -30,11 +30,9 @@
 #include "logging_stack.h"
 
 #include <string.h>
-#include "FreeRTOS.h"
-
 #include "transport_interface_api.h"
 #include "iot_socket.h"
-#include "iot_tls.h"
+#include "tls_helper.h"
 
 
 static int32_t Recv_Cb (void *pvCallerContext, unsigned char * pucReceiveBuffer, size_t xReceiveLength);
@@ -42,17 +40,19 @@ static int32_t Send_Cb (void *pvCallerContext, const unsigned char *pucData,    
 
 
 TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
-                                           const ServerInfo_t * pServerInfo,
-                                           const TLSConfig_t * pTLSConfig )
+                                     const ServerInfo_t * pServerInfo,
+                                     const TLSParams_t * pTLSParams,
+                                     uint32_t sendTimeoutMs,
+                                     uint32_t recvTimeoutMs )
 {
 
     TransportStatus_t status = TRANSPORT_STATUS_SUCCESS;
     int32_t socketStatus = 0;
     uint8_t ipAddr[4];
     uint32_t ipAddrLen;
-    TLSParams_t tlsParams = { 0 };
+    TLSHelperParams_t tlsHelperParams = { 0 };
 
-    if( ( pNetworkContext == NULL ) || ( pServerInfo == NULL ) || ( pTLSConfig == NULL ) )
+    if( ( pNetworkContext == NULL ) || ( pServerInfo == NULL ) )
     {
         status = TRANSPORT_STATUS_INVALID_PARAMETER;
     }
@@ -92,32 +92,43 @@ TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
         }
         
         /* IF this is a secure TLS connection, perform the TLS handshake. */
-        if( ( status == TRANSPORT_STATUS_SUCCESS ) && ( pTLSConfig->enableTls == true ) )
+        if( ( status == TRANSPORT_STATUS_SUCCESS ) && ( pTLSParams != NULL ) )
         {
             /* Initialize TLS */
-            tlsParams.ulSize                    = sizeof(tlsParams);
-            tlsParams.pcDestination             = pServerInfo->pHostName;
-            tlsParams.pcServerCertificate       = NULL;
-            tlsParams.ulServerCertificateLength = 0U;
-            tlsParams.pvCallerContext           = pNetworkContext;
-            tlsParams.pxNetworkRecv             = &Recv_Cb;
-            tlsParams.pxNetworkSend             = &Send_Cb;
+            tlsHelperParams.pcDestination             = pServerInfo->pHostName;
+            tlsHelperParams.pcServerCertificate       = pTLSParams->pRootCa;
+            tlsHelperParams.ulServerCertificateLength = pTLSParams->rootCaSize;
+            tlsHelperParams.pvCallerContext           = pNetworkContext;
+            tlsHelperParams.pxNetworkRecv             = &Recv_Cb;
+            tlsHelperParams.pxNetworkSend             = &Send_Cb;
+            tlsHelperParams.pPrivateKeyLabel          = pTLSParams->pPrivateKeyLabel;
+            tlsHelperParams.pClientCertLabel          = pTLSParams->pClientCertLabel;
+            tlsHelperParams.pcLoginPIN                = pTLSParams->pLoginPIN;
 
-            pNetworkContext->useTLS = true;
-            iotSocketSetOpt (pNetworkContext->socket, IOT_SOCKET_SO_SNDTIMEO, &pTLSConfig->sendTimeoutMs, sizeof(pTLSConfig->sendTimeoutMs));
-            iotSocketSetOpt (pNetworkContext->socket, IOT_SOCKET_SO_RCVTIMEO, &pTLSConfig->recvTimeoutMs, sizeof(pTLSConfig->recvTimeoutMs));
 
-            if( TLS_Init (&pNetworkContext->pTLSContext, &tlsParams) == pdFREERTOS_ERRNO_NONE )
+            pNetworkContext->pTLSContext = pvPortMalloc( sizeof( TLSContext_t ) );
+            
+            if( pNetworkContext->pTLSContext != NULL )
             {
-                /* Initiate TLS handshake */
-                if( TLS_Connect(pNetworkContext->pTLSContext) != pdFREERTOS_ERRNO_NONE)
+                iotSocketSetOpt (pNetworkContext->socket, IOT_SOCKET_SO_SNDTIMEO, &sendTimeoutMs, sizeof(sendTimeoutMs));
+                iotSocketSetOpt (pNetworkContext->socket, IOT_SOCKET_SO_RCVTIMEO, &recvTimeoutMs, sizeof(recvTimeoutMs));
+
+                if( TLS_Init( ( TLSContext_t * ) ( pNetworkContext->pTLSContext ), &tlsHelperParams) == pdPASS )
+                {
+                    /* Initiate TLS handshake */
+                    if( TLS_Connect( ( TLSContext_t * ) ( pNetworkContext->pTLSContext ) ) != 0)
+                    {
+                        status = TRANSPORT_STATUS_TLS_FAILURE;
+                    }
+                }
+                else
                 {
                     status = TRANSPORT_STATUS_TLS_FAILURE;
                 }
             }
             else
             {
-                status = TRANSPORT_STATUS_TLS_FAILURE;
+                status = TRANSPORT_STATUS_INSUFFICIENT_MEMORY;
             }
         }
 
@@ -143,9 +154,9 @@ int32_t Transport_Recv( NetworkContext_t * pNetworkContext,
   }
   else 
   {
-      if( pNetworkContext->useTLS == true )
+      if( pNetworkContext->pTLSContext != NULL )
       {
-          rc = TLS_Recv (pNetworkContext->pTLSContext, pBuffer, bytesToRecv);
+          rc = TLS_Recv ( ( TLSContext_t * ) ( pNetworkContext->pTLSContext ) , pBuffer, bytesToRecv);
       }
       else
       {
@@ -168,9 +179,9 @@ int32_t Transport_Send( NetworkContext_t * pNetworkContext,
   }
   else 
   {
-      if( pNetworkContext->useTLS == true )
+      if( pNetworkContext->pTLSContext != NULL )
       {
-          rc = TLS_Send(pNetworkContext->pTLSContext, pMessage, bytesToSend);
+          rc = TLS_Send( ( TLSContext_t * ) ( pNetworkContext->pTLSContext ), pMessage, bytesToSend);
       }
       else
       {
@@ -211,7 +222,8 @@ static int32_t Recv_Cb (void *pvCallerContext, unsigned char * pucReceiveBuffer,
             }
         }
     }
-  return (rc);
+
+    return (rc);
 }
 
 /**
@@ -240,7 +252,7 @@ static int32_t Send_Cb (void *pvCallerContext, const unsigned char *pucData, siz
     return (rc);
 }
 
-TransportStatus_t Transport_Disconnect( const NetworkContext_t * pNetworkContext )
+TransportStatus_t Transport_Disconnect( NetworkContext_t * pNetworkContext )
 {
     TransportStatus_t status = TRANSPORT_STATUS_SUCCESS;
     int32_t socketStatus;
@@ -261,9 +273,11 @@ TransportStatus_t Transport_Disconnect( const NetworkContext_t * pNetworkContext
             status = TRANSPORT_STATUS_SOCKET_CLOSE_FAILURE;
         }
 
-        if( ( pNetworkContext->useTLS == true ) && ( pNetworkContext->pTLSContext != NULL ) )
+        if(  pNetworkContext->pTLSContext != NULL )
         {
-            TLS_Cleanup( pNetworkContext->pTLSContext );
+            TLS_Cleanup( (TLSContext_t * ) ( pNetworkContext->pTLSContext ) );
+            vPortFree( pNetworkContext->pTLSContext );
+            pNetworkContext->pTLSContext = NULL;
         }
     }
 

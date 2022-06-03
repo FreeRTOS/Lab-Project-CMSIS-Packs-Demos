@@ -17,7 +17,6 @@ project:
   
   add-paths:
     - ./config_files
-    - ./tls
     - ./crypto
     - ./pkcs11
     - ./logging/include
@@ -80,10 +79,6 @@ project:
         - file: ./logging/include/logging_levels.h
         - file: ./logging/include/logging_stack.h
         - file: ./logging/iot_logging_task_dynamic_buffers.c
-    - group: tls
-      files:
-        - file: ./tls/iot_tls.h
-        - file: ./tls/iot_tls.c
   layers:
     - layer: ./Board/AVH_MPS2_Cortex-M7/Board.clayer.yml
       for-type: 

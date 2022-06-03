@@ -23,28 +23,35 @@
  * http://www.FreeRTOS.org
  */
 
-#ifndef __AWS__TLS__H__
-#define __AWS__TLS__H__
+#ifndef TLS_HELPER_H
+#define TLS_HELPER_H
 
-#ifndef INC_FREERTOS_H
-    #error "include FreeRTOS.h must appear in source files before include iot_tls.h"
-#endif
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/sha256.h"
+#include "mbedtls/pk.h"
+#include "mbedtls/pk_internal.h"
+#include "mbedtls/debug.h"
+#include "core_pkcs11.h"
 
-/**
- * @defgroup TlsErrors TLS Error Codes
- * @brief Error codes returned by the TLS API.
- *
- * Note that TLS API may also propagate port-specific
- * error codes, or codes from mbedTLS.
- */
-/**@{ */
-#define TLS_ERROR_HANDSHAKE_FAILED    ( -2001 ) /*!< Error in handshake. */
-#define TLS_ERROR_RNG                 ( -2002 ) /*!< Error in RNG. */
-#define TLS_ERROR_SIGN                ( -2003 ) /*!< Error in sign operation. */
-#define TLS_ERROR_NO_PRIVATE_KEY      ( -2004 ) /*!< Private key was not provisioned. */
-#define TLS_ERROR_NO_CERTIFICATE      ( -2005 ) /*!< Client certificate not provisioned. */
+typedef struct TLSContext
+{
+    /* mbedTLS. */
+    mbedtls_ssl_context xMbedSslCtx;
+    mbedtls_ssl_config xMbedSslConfig;
+    mbedtls_x509_crt xMbedX509CA;
+    mbedtls_x509_crt xMbedX509Cli;
+    mbedtls_pk_context xMbedPkCtx;
+    mbedtls_pk_info_t xMbedPkInfo;
+    mbedtls_ctr_drbg_context xMbedDrbgCtx;
+    mbedtls_x509_crt_profile xCertProfile;
 
-/**@} */
+    /* PKCS#11. */
+    CK_FUNCTION_LIST_PTR pxP11FunctionList;
+    CK_SESSION_HANDLE xP11Session;
+    CK_OBJECT_HANDLE xP11PrivateKey;
+    CK_KEY_TYPE xKeyType;
+} TLSContext_t;
 
 /**
  * @brief Defines callback type for receiving bytes from the network.
@@ -85,94 +92,56 @@ typedef int32_t ( * NetworkSend_t )( void * pvCallerContext,
  * @param[in] pvCallerContext Caller-defined context handle to be used with callback
  * functions.
  */
-typedef struct xTLS_PARAMS
+typedef struct TLSHelperParams
 {
-    uint32_t ulSize;
     const char * pcDestination;
-    const char * pcServerCertificate;
-    uint32_t ulServerCertificateLength;
-    const char ** ppcAlpnProtocols;
-    uint32_t ulAlpnProtocolsCount;
+    const char ** pcAlpnProtocols;
 
     NetworkRecv_t pxNetworkRecv;
     NetworkSend_t pxNetworkSend;
     void * pvCallerContext;
-} TLSParams_t;
+
+    const char * pcServerCertificate;
+    uint32_t ulServerCertificateLength;
+    const char * pClientCertLabel;   /**< @brief String representing the PKCS #11 label for the client certificate. */
+    const char * pPrivateKeyLabel;   /**< @brief String representing the PKCS #11 label for the private key. */
+    const char * pcLoginPIN;         /**< @brief A login Password used to retrive the credentials */
+} TLSHelperParams_t;
 
 /**
- * @brief Initializes the TLS context.
+ * @brief Initializes the Mbedtls Context.
  *
- * @param[out] ppvContext Opaque context handle returned by the TLS library.
- * @param[in] pxParams Connection parameters specified by caller.
+ * @param[out] pxContext Context that needs to be initialized.
+ * @param[in] pxParams TLS parameters specified by caller.
  *
  * @return Zero on success. Error return codes have the high bit set.
  */
-BaseType_t TLS_Init( void ** ppvContext,
-                     TLSParams_t * pxParams );
+BaseType_t TLS_Init( TLSContext_t * pxContext, TLSHelperParams_t * pxParams );
 
 /**
- * @brief Negotiates TLS and connects to the server.
+ * @brief Perform TLS handshake with the given TLS context.
  *
- * @param pvContext Opaque context handle for TLS library.
+ * @param pxContext Opaque context handle for TLS library.
  *
  * @return Zero on success. Error return codes have the high bit set.
  */
-BaseType_t TLS_Connect( void * pvContext );
-
-/**
- * @brief Reads the requested number of bytes from the secure connection
- *
- * @param pvContext Opaque context handle for TLS library.
- * @param pucReadBuffer Byte array for storing (decrypted) data read from the
- * network.
- * @param xReadLength Length in bytes of read buffer.
- *
- * @return Number of bytes read. Error return codes have the high bit set.
- */
-BaseType_t TLS_Recv( void * pvContext,
-                     unsigned char * pucReadBuffer,
-                     size_t xReadLength );
-
-/**
- * @brief Writes the requested number of bytes to the secure connection.
- *
- * @param pvContext Opaque context handle for TLS library.
- * @param pucMsg Byte array of data to be encrypted and then sent to the network.
- * @param xMsgLength Length in bytes of write buffer.
- *
- * @return Number of bytes read. Error return codes have the high bit set.
- */
-BaseType_t TLS_Send( void * pvContext,
-                     const unsigned char * pucMsg,
-                     size_t xMsgLength );
+int32_t TLS_Connect( TLSContext_t * pxContext );
 
 /**
  * @brief Frees resources consumed by the TLS context.
  *
  * @param pvContext Opaque context handle for TLS library.
  */
-void TLS_Cleanup( void * pvContext );
+void TLS_Cleanup( TLSContext_t * pxContext );
 
-/**
- * @brief callback to verify the expiration date of the certificate
- *
- * This callback will return TRUE if the date provided is in the past.
- *
- * @param day the expiration date day to check
- * @param month the expiration date month to check
- * @param year the expiration date year to check.  Note: this is the full year i.e. 1932
- *
- * @return non-zero if the date is in the past
- */
-typedef BaseType_t (* DateIsInThePast_t)( BaseType_t day,
-                                          BaseType_t month,
-                                          BaseType_t year );
 
-/**
- * @brief function to set the callback for testing the expiration date of certificates
- *
- * @param DateIsInThePast a function that tests the expiration date against the current date
- */
-void TLS_setDateIsInThePastFunction( DateIsInThePast_t dateIsInThePast );
+int32_t TLS_Recv( TLSContext_t * pxContext,
+                     unsigned char * pucReadBuffer,
+                     size_t xReadLength );
 
-#endif /* ifndef __AWS__TLS__H__ */
+int32_t TLS_Send( TLSContext_t * pxContext,
+                     const unsigned char * pucMsg,
+                     size_t xMsgLength );
+
+
+#endif /* ifndef TLS_HELPER_H */

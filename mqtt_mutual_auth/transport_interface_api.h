@@ -76,12 +76,8 @@ typedef struct ServerInfo
  * @brief Contains the credentials necessary for connection setup.
  *
  */
-typedef struct TLSConfig
+typedef struct TLSParamsßß
 {
-    bool enableTls;         /**< @brief Whether require TLS for the transport. */
-    uint32_t sendTimeoutMs; /**< @brief Timeout for transport send. */
-    uint32_t recvTimeoutMs; /**< @brief Timeout for transport recv. */
-
     /**
      * @brief Set this to a non-NULL value to use ALPN.
      *
@@ -109,7 +105,11 @@ typedef struct TLSConfig
 
     const char * pRootCa; /**< @brief String representing a trusted server Root CA certificate. */
     size_t rootCaSize;    /**< @brief SizeSecureSocketsTransport_Connect associated with #SocketsConfig_t.pRootCa. */
-} TLSConfig_t;
+
+    char * pPrivateKeyLabel;
+    char * pClientCertLabel;
+    char * pLoginPIN;
+} TLSParams_t;
 
 
 /**
@@ -117,7 +117,7 @@ typedef struct TLSConfig
  *
  * @param[out] pNetworkContext The output parameter to return the created network context.
  * @param[in] pServerInfo Server connection info.
- * @param[in] pSocketsConfig socket configs for the connection.
+ * @param[in] pTLSParams socket configs for the connection.
  *
  * @return #TRANSPORT_STATUS_SUCCESS on success;
  *         #TRANSPORT_STATUS_INVALID_PARAMETER, #TRANSPORT_STATUS_INSUFFICIENT_MEMORY,
@@ -126,7 +126,9 @@ typedef struct TLSConfig
  */
 TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
                                            const ServerInfo_t * pServerInfo,
-                                           const TLSConfig_t * pTLSConfig );
+                                           const TLSParams_t * pTLSParams,
+                                               uint32_t sendTimeoutMs,
+                                     uint32_t recvTimeoutMs );
 
 /**
  * @brief Closes a TLS session on top of a TCP connection using the Secure Sockets API.
@@ -137,7 +139,7 @@ TransportStatus_t Transport_Connect( NetworkContext_t * pNetworkContext,
  * @return #TRANSPORT_STATUS_SUCCESS on success;
  *         #TRANSPORT_STATUS_INVALID_PARAMETER, #TRANSPORT_STATUS_INTERNAL_ERROR on failure.
  */
-TransportStatus_t Transport_Disconnect( const NetworkContext_t * pNetworkContext );
+TransportStatus_t Transport_Disconnect( NetworkContext_t * pNetworkContext );
 
 
 /**

@@ -53,6 +53,8 @@
 /* Demo Specific configs. */
 #include "demo_config.h"
 
+#include "core_pkcs11_config.h"
+
 /* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -69,18 +71,15 @@
 /* Transport interface implementation include header for TLS. */
 #include "transport_interface_api.h"
 
-/* Include header for client credentials. */
-#include "aws_clientcredential_keys.h"
-
-/* Include header for root CA certificates. */
-#include "iot_default_root_certificates.h"
-
 /*------------- Demo configurations -------------------------*/
 /**
  * @brief The root CA certificate belonging to the broker.
  */
 #ifndef democonfigROOT_CA_PEM
-    #define democonfigROOT_CA_PEM    tlsATS1_ROOT_CERTIFICATE_PEM
+    #define democonfigROOT_CA_PEM    NULL
+    #define democonfigROOT_CA_LENGTH 0
+#else
+    #define democonfigROOT_CA_LENGTH sizeof( democonfigROOT_CA_PEM )
 #endif
 
 /**
@@ -649,7 +648,7 @@ static BaseType_t prvConnectToServerWithBackoffRetries( NetworkContext_t * pxNet
 {
     ServerInfo_t xServerInfo = { 0 };
 
-    TLSConfig_t xTLSConfig = { 0 };
+    TLSParams_t xTLSParams = { 0 };
     TransportStatus_t xNetworkStatus = TRANSPORT_STATUS_SUCCESS;
     BackoffAlgorithmContext_t xReconnectParams;
     BaseType_t xBackoffStatus = pdFALSE;
@@ -661,14 +660,14 @@ static BaseType_t prvConnectToServerWithBackoffRetries( NetworkContext_t * pxNet
     xServerInfo.port = democonfigMQTT_BROKER_PORT;
 
     /* Configure credentials for TLS mutual authenticated session. */
-    xTLSConfig.enableTls = true;
-    xTLSConfig.pAlpnProtos = NULL;
-    xTLSConfig.maxFragmentLength = 0;
-    xTLSConfig.disableSni = false;
-    xTLSConfig.pRootCa = democonfigROOT_CA_PEM;
-    xTLSConfig.rootCaSize = sizeof( democonfigROOT_CA_PEM );
-    xTLSConfig.sendTimeoutMs = mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS;
-    xTLSConfig.recvTimeoutMs = mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS;
+    xTLSParams.pAlpnProtos = NULL;
+    xTLSParams.maxFragmentLength = 0;
+    xTLSParams.disableSni = false;
+    xTLSParams.pRootCa = democonfigROOT_CA_PEM;
+    xTLSParams.rootCaSize = democonfigROOT_CA_LENGTH;
+    xTLSParams.pPrivateKeyLabel = pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS;
+    xTLSParams.pClientCertLabel = pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS;
+    xTLSParams.pLoginPIN = configPKCS11_DEFAULT_USER_PIN;
 
     /* Initialize reconnect attempts and interval. */
     BackoffAlgorithm_InitializeParams( &xReconnectParams,
@@ -691,11 +690,13 @@ static BaseType_t prvConnectToServerWithBackoffRetries( NetworkContext_t * pxNet
         /* Attempt to create a mutually authenticated TLS connection. */
         xNetworkStatus = Transport_Connect( pxNetworkContext,
                                             &xServerInfo,
-                                             &xTLSConfig );
+                                            &xTLSParams,
+                                            mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS,
+                                            mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS );
 
         if( xNetworkStatus != TRANSPORT_STATUS_SUCCESS )
         {
-            LogWarn( ( "Connection to the broker failed. Attempting connection retry after backoff delay." ) );
+            LogWarn( ( "Connection to the broker failed with error %d. Attempting connection retry after backoff delay.", xNetworkStatus ) );
 
             /* As the connection attempt failed, we will retry the connection after an
              * exponential backoff with jitter delay. */
