@@ -17,7 +17,6 @@ project:
   
   add-paths:
     - ./config_files
-    - ./pkcs11
     - ./logging/include
     - ./mbedtls_alt
 
@@ -42,9 +41,7 @@ project:
     - component: AWS::FreeRTOS:backoffAlgorithm
     - component: AWS::FreeRTOS:coreMQTT
     - component: AWS::FreeRTOS:coreMQTT Agent
-    - component: AWS::FreeRTOS:corePKCS11&Custom
 
-    - component: AWS::Security:PKCS11&No Implementation
 
   groups:
     - group: Documentation
@@ -63,11 +60,6 @@ project:
         - file: ./config_files/FreeRTOSIPConfig.h
         - file: ./config_files/iot_config.h
         - file: ./config_files/demo_config.h
-    - group: pkcs11
-      files:
-        - file: ./pkcs11/core_pkcs11_pal.c
-        - file: ./pkcs11/pkcs11_helpers.h
-        - file: ./pkcs11/pkcs11_helpers.c
     - group: logging
       files:
         - file: ./logging/include/iot_logging_task.h
@@ -97,6 +89,11 @@ project:
         - +AVH_MPS3_Corstone-300
 
     - layer: ./Interface/transport/IoT_Socket/Interface.clayer.yml
+      for-type:
+        - +AVH_MPS2_Cortex-M7
+        - +AVH_MPS3_Corstone-300
+
+    - layer: ./Interface/pkcs11/custom/Interface.clayer.yml
       for-type:
         - +AVH_MPS2_Cortex-M7
         - +AVH_MPS3_Corstone-300

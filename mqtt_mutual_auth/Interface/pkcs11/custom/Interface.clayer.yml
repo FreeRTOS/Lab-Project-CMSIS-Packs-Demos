@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/0.9.3/tools/projmgr/schemas/clayer.schema.json
+
+layer:
+  # type: Interface AWS
+  # name: IoT Socket
+  description: Custom in memory implementation of PKCS11 PAL.
+
+  # interfaces:
+  #   - consumes:
+  #     - IoT_Socket:
+  #     - FreeRTOS:
+  #   - provides:
+  #     - AWS_Socket:
+
+  components:
+     - component: AWS::FreeRTOS:corePKCS11&Custom
+     - component: AWS::Security:PKCS11&No Implementation
+
+  groups:
+    - group: Interface_PKCS11_Custom
+      files:
+        - file: ./core_pkcs11_pal.c
+        - file: ./pkcs11_helpers.c
+        - file: ./pkcs11_helpers.h
