@@ -86,4 +86,4 @@ solution:
           - --entry=Reset_Handler
 
   projects:
-    - project: ./mqtt_mutual_auth/AWS_MQTT_MutualAuth_Demo.cproject.yml
+    - project: ./mqtt_pub_sub/AWS_MQTT_PubSub_Demo.cproject.yml
