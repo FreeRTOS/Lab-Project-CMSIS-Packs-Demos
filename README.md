@@ -1,14 +1,14 @@
 # ARM-AVH-IoT-Demo
 Refrence example to showcase AWS IoT connectivity using ARM CMSIS packs for FreeRTOS modular libraries running on ARM Virtual Hardware.
 
-# Hardware
+## Hardware
 
 Virtual Hardware: AVH Corstone 300
 
 Processor : ARM Cortex M55
 
 
-# Use Vscode Remote development on EC2 Instance with ARM AVH AMI
+## Use Vscode and EC2 Instance with ARM AVH AMI
 
 1. Create an EC2 instance containing ARM Corestone 300 Virtual Hardware. Goto this [page](https://www.arm.com/products/development-tools/simulation/virtual-hardware) for more details on 
 how to sign up for an EC2 instance contianing ARM AMI.
