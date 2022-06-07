@@ -29,8 +29,8 @@ git clone git@github.com:ravibhagavandas/ARM-AVH-IoT-Demo.git
 - MQTT Broker Port: `democonfigMQTT_BROKER_PORT`
 
 7. Configure following credentials in file `mqtt_pub_sub/config_files/aws_clientcredential_keys.h`:
-Device private Key PEM file: `keyCLIENT_CERTIFICATE_PEM` 
-Device certificate PEM file: `keyCLIENT_PRIVATE_KEY_PEM` 
+- Device private Key PEM file: `keyCLIENT_CERTIFICATE_PEM` 
+- Device certificate PEM file: `keyCLIENT_PRIVATE_KEY_PEM` 
 
 8. Build MQTT Pub Sub Multithreaded demo for AVH Corestone 300:
 ```
