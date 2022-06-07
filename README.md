@@ -8,7 +8,7 @@ Virtual Hardware: AVH Corstone 300
 Processor : ARM Cortex M55
 
 
-## Use Vscode and EC2 Instance with ARM AVH AMI
+## Use Vscode and EC2 Instance with Virtual Hardware
 
 1. Create an EC2 instance containing ARM Corestone 300 Virtual Hardware. Goto this [page](https://www.arm.com/products/development-tools/simulation/virtual-hardware) for more details on 
 how to sign up for an EC2 instance contianing ARM AMI.
