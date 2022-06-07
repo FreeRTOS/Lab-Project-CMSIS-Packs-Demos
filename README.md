@@ -4,6 +4,7 @@ Refrence example to showcase AWS IoT connectivity using ARM CMSIS packs for Free
 # Hardware
 
 Virtual Hardware: AVH Corstone 300
+
 Processor : ARM Cortex M55
 
 
