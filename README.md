@@ -10,7 +10,7 @@ Processor : ARM Cortex M55
 
 ## Use Vscode and EC2 Instance with Virtual Hardware
 
-1. Create an EC2 instance containing ARM Corestone 300 Virtual Hardware. Goto this [page](https://www.arm.com/products/development-tools/simulation/virtual-hardware) for more details on 
+1. Create an EC2 instance containing ARM Corestone 300 Virtual Hardware. Goto [this](https://www.arm.com/products/development-tools/simulation/virtual-hardware) page for more details on 
 how to sign up for an EC2 instance contianing ARM AMI.
 2. Login to the EC2 Instance and clone the repo:
 ```
