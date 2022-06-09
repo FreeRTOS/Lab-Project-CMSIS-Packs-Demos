@@ -534,7 +534,7 @@ void vSimpleSubscribePublishTask( void * pvParameters )
         }
         else
         {
-            LogError( ( "Successfully subscribed to topic: %.*s",
+            LogInfo( ( "Successfully subscribed to topic: %.*s",
                         xInTopicLength,
                         cInTopicBuf ) );
         }
