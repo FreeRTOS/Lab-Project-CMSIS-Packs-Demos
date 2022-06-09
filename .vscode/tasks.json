@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure AWS IoT Credentials",
+            "command": "python",
+            "type": "shell",
+            "windows": {
+                "command": "python.exe"
+            },
+            "showOutput": "always",
+            "args": [
+                "${workspaceFolder}/tools/provision/configure_creds.py",
+                "--private-key",
+                "${workspaceFolder}/${input:private_key}",
+                "--certificate",
+                "${workspaceFolder}/${input:certificate}",
+                "--output",
+                "${workspaceFolder}/${input:output_file}"
+            ],
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+          "type": "promptString",
+          "id": "certificate",
+          "description": "Certificate file path within workspace",
+        },
+        {
+            "type": "promptString",
+            "id": "private_key",
+            "description": "Private key file path within workspace",
+        },
+        {
+            "type": "promptString",
+            "id": "output_file",
+            "description": "Output file path within workspace",
+        }
+      ]
+}
