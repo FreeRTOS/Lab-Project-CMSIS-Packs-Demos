@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/0.9.3/tools/projmgr/schemas/clayer.schema.json
+
+layer:
+  # name: Mbedtls ALT implementation using FreeRTOS
+  description: MBEDTLS FreeRTOS ALT Implementation
+
+  components:
+    - component: ARM::Security:mbed TLS
+
+  groups:
+    - group: mbedtls_alt
+      files: 
+        - file: ./mbedtls_freertos_alt.c
+        - file: ./threading_alt.h

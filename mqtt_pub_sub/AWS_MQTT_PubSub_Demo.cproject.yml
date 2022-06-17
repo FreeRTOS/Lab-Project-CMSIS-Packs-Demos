@@ -1,25 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/0.9.3/tools/projmgr/schemas/cproject.schema.json
 
 project:
-  # packs:
-  #   - pack: ARM::CMSIS
-  #   - pack: ARM::CMSIS-FreeRTOS@10.4.6
-  #   - pack: ARM::mbedTLS@1.7.0
-  #   - pack: AWS::backoffAlgorithm@1.0.0-Beta
-  #   - pack: AWS::coreMQTT@1.1.0-Beta
-  #   - pack: AWS::coreMQTT_Agent@1.0.1-Beta
-  #   - pack: AWS::corePKCS11@3.0.0-Beta
-  #   - pack: Arm-Packs::PKCS11
 
   defines:
-    # - MBEDTLS_CONFIG_FILE="aws_mbedtls_config.h"
     - MBEDTLS_CONFIG_FILE=\"aws_mbedtls_config.h\"
   
   add-paths:
     - ./config_files
-    - ./logging/include
-    - ./mbedtls_alt
-    - ./mqtt_agent
 
   misc:
     - C*:
@@ -37,12 +24,6 @@ project:
     - component: ARM::RTOS&FreeRTOS:Stream Buffer
     - component: ARM::RTOS&FreeRTOS:Timers
 
-    - component: ARM::Security:mbed TLS
-
-    - component: AWS::FreeRTOS:backoffAlgorithm
-    - component: AWS::FreeRTOS:coreMQTT
-    - component: AWS::FreeRTOS:coreMQTT Agent
-
   groups:
     - group: Documentation
       files: 
@@ -52,7 +33,6 @@ project:
         - file: ./app_main.c
         - file: ./mqtt_demo_mutual_auth.c
         - file: ./mqtt_demo_pub_sub.c
-        - file: ./transport_interface_api.h
     - group: config_files
       files:
         - file: ./config_files/aws_mbedtls_config.h
@@ -61,21 +41,12 @@ project:
         - file: ./config_files/FreeRTOSIPConfig.h
         - file: ./config_files/iot_config.h
         - file: ./config_files/demo_config.h
-    - group: logging
-      files:
-        - file: ./logging/include/iot_logging_task.h
-        - file: ./logging/include/logging_levels.h
-        - file: ./logging/include/logging_stack.h
-        - file: ./logging/iot_logging_task_dynamic_buffers.c
-    - group: mbedtls_alt
-      files:
-        - file: ./mbedtls_alt/mbedtls_freertos_alt.c
-        - file: ./mbedtls_alt/threading_alt.h
-    - group: mqtt_agent
-      files:
-        - file: ./mqtt_agent/mqtt_agent_task.c
-        - file: ./mqtt_agent/mqtt_agent_task.h
   layers:
+    - layer: ../common/logging/logging.clayer.yml
+    - layer: ../common/mqtt_agent/mqtt_agent.clayer.yml
+    - layer: ../common/mbedtls_alt/mbedtls_alt.clayer.yml
+    - layer: ../Interface/mqtt_agent/freertos/Interface.clayer.yml
+    
     - layer: ./Board/AVH_MPS2_Cortex-M7/Board.clayer.yml
       for-type: 
         - +AVH_MPS2_Cortex-M7
@@ -88,23 +59,18 @@ project:
         - +IMXRT1050-EVKB_ESP8266
         - +IMXRT1050-EVKB_WizFi360
 
-    - layer: ./Socket/VSocket/Socket.clayer.yml
+    - layer: ../common/Socket/VSocket/Socket.clayer.yml
       for-type: 
         - +AVH_MPS2_Cortex-M7
         - +AVH_MPS3_Corstone-300
 
-    - layer: ./Interface/transport/IoT_Socket/Interface.clayer.yml
+    - layer: ../Interface/transport/IoT_Socket/Interface.clayer.yml
       for-type:
         - +AVH_MPS2_Cortex-M7
         - +AVH_MPS3_Corstone-300
 
-    - layer: ./Interface/pkcs11/custom/Interface.clayer.yml
+    - layer: ../Interface/pkcs11/custom/Interface.clayer.yml
       for-type:
         - +AVH_MPS2_Cortex-M7
         - +AVH_MPS3_Corstone-300
-
-    - layer: ./Interface/mqtt_agent/freertos/Interface.clayer.yml
-      for-type:
-        - +AVH_MPS2_Cortex-M7
-        - +AVH_MPS3_Corstone-300 
   

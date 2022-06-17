@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/0.9.3/tools/projmgr/schemas/clayer.schema.json
+
+layer:
+  # name: MQTT Agent
+  description: MQTT Agent layer shared between different demos
+
+  components:
+    - component: AWS::FreeRTOS:coreMQTT Agent
+    - component: AWS::FreeRTOS:coreMQTT
+    - component: AWS::FreeRTOS:backoffAlgorithm
+
+  groups:
+    - group: MQTTAgent
+      files: 
+        - file: ./mqtt_agent_task.c
+        - file: ./mqtt_agent_task.h

@@ -14,6 +14,12 @@ solution:
     - pack: Arm-Packs::PKCS11
     - pack: Keil::ARM_Compiler
     - pack: MDK-Packs::IoT_Socket
+    - pack: tensorflow::tensorflow-lite-micro@1.22.5-rc4
+    - pack: tensorflow::flatbuffers@1.22.5-rc4
+    - pack: tensorflow::ruy@1.22.5-rc4
+    - pack: tensorflow::gemmlowp@1.22.5-rc4
+    - pack: tensorflow::kissfft@1.22.5-rc4
+    - pack: Arm::ethos-u-core-driver@1.22.2
 
     - pack: Keil::V2M-MPS2_CMx_BSP@1.8.0
       for-type:
@@ -48,16 +54,12 @@ solution:
     - type: AVH_MPS2_Cortex-M7
       device: ARM::CMSDK_CM7_DP_VHT
     - type: AVH_MPS3_Corstone-300
-      # device: ARM::SSE-300-MPS3_VHT
       device: ARM::SSE-300-MPS3
     - type: IMXRT1050-EVKB
-      # board: EVKB-IMXRT1050_MDK
       device: MIMXRT1052DVL6B
     - type: IMXRT1050-EVKB_ESP8266
-      # board: EVKB-IMXRT1050_MDK
       device: MIMXRT1052DVL6B
     - type: IMXRT1050-EVKB_WizFi360
-      # board: EVKB-IMXRT1050_MDK
       device: MIMXRT1052DVL6B
 
   build-types:
@@ -65,7 +67,7 @@ solution:
       compiler: AC6
       misc:
         - C*:
-          - -O1
+          - -Os
           - -g
         - C:
           - -std=c99
@@ -73,17 +75,26 @@ solution:
           - -masm=auto
         - Link:
           - --entry=Reset_Handler
+          - --strict
+          - --xref
+          - --info summarysizes
     - type: Release
       compiler: AC6
       misc:
         - C*:
-          - -O3
+          - -Os
         - C:
           - -std=c99
+        - CPP:
+          - -std=c++11
         - ASM:
           - -masm=auto
         - Link:
           - --entry=Reset_Handler
+          - --strict
+          - --xref
+          - --info summarysizes
 
   projects:
     - project: ./mqtt_pub_sub/AWS_MQTT_PubSub_Demo.cproject.yml
+    - project: ./micro_speech/Microspeech_Demo.cproject.yml
