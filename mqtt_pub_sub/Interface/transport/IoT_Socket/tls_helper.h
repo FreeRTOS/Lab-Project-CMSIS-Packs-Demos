@@ -111,12 +111,12 @@ typedef struct TLSHelperParams
 /**
  * @brief Initializes the Mbedtls Context.
  *
- * @param[out] pxContext Context that needs to be initialized.
  * @param[in] pxParams TLS parameters specified by caller.
+ * @param[in,out] pxContext Context that needs to be initialized.
  *
  * @return Zero on success. Error return codes have the high bit set.
  */
-BaseType_t TLS_Init( TLSContext_t * pxContext, TLSHelperParams_t * pxParams );
+BaseType_t TLS_Init( TLSHelperParams_t * pxParams, TLSContext_t * pxContext );
 
 /**
  * @brief Perform TLS handshake with the given TLS context.

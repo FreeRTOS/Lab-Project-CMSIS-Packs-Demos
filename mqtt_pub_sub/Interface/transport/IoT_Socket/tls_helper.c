@@ -579,8 +579,7 @@ static int parseDefaultRootCA( TLSContext_t * pxContext )
     return xResult;
 }
 
-BaseType_t TLS_Init( TLSContext_t * pxContext,
-                     TLSHelperParams_t * pxParams )
+BaseType_t TLS_Init( TLSHelperParams_t * pxParams, TLSContext_t * pxContext )
 {
     CK_RV xPKCS11Result = CKR_OK;
     int mbedTLSResult = 0;
@@ -809,6 +808,16 @@ BaseType_t TLS_Init( TLSContext_t * pxContext,
     else
     {
         xResult = pdFALSE;
+    }
+
+    if( xResult == pdFALSE )
+    {
+        /* Cleanup context created. */
+        if( pxContext != NULL )
+        {
+            prvFreeContext( pxContext );
+            memset( pxContext, 0x00, sizeof( TLSContext_t ) );
+        }
     }
 
 
