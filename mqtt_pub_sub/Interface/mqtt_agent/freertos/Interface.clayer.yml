@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/0.9.3/tools/projmgr/schemas/clayer.schema.json
+
+layer:
+  # type: Interface AWS
+  # name: IoT Socket
+  description: MQTT Agent Interface Implemented Using FreeRTOS
+
+  # interfaces:
+  #   - consumes:
+  #     - IoT_Socket:
+  #     - FreeRTOS:
+  #   - provides:
+  #     - AWS_Socket:
+
+  groups:
+    - group: Interface_MQTTAgent_FreeRTOS
+      files:
+        - file: ./freertos_agent_message.h
+        - file: ./freertos_agent_message.c
+        - file: ./freertos_command_pool.h
+        - file: ./freertos_command_pool.c

@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Open-CMSIS-Pack/devtools/schemas/projmgr/0.9.3/tools/projmgr/schemas/clayer.schema.json
+
+layer:
+  # type: Interface AWS
+  # name: IoT Socket
+  description: AWS Socket connecting over IoT Socket
+
+  # interfaces:
+  #   - consumes:
+  #     - IoT_Socket:
+  #     - FreeRTOS:
+  #   - provides:
+  #     - AWS_Socket:
+
+  groups:
+    - group: Interface_Transport
+      files:
+        - file: ./network_startup.c
+        - file: ./transport_tls_iot_socket.c
+        - file: ./tls_helper.h
+        - file: ./tls_helper.c
+        - file: ./iot_default_root_certificates.h
