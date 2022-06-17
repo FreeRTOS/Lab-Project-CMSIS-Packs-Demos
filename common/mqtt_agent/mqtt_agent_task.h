@@ -1,5 +1,4 @@
 /*
- * Lab-Project-coreMQTT-Agent 201215
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -126,5 +125,25 @@ BaseType_t xAddMQTTTopicFilterCallback( const char * pcTopicFilter,
 void vRemoveMQTTTopicFilterCallback( const char * pcTopicFilter,
                                      uint16_t usTopicFilterLength );
 
+/**
+ * @brief Publishes a Qos 0 or Qos 1 message to a topic.
+ * MQTT Agent should be in connected state when the function is invoked otherwise
+ * it returns an error. For Qos0 message function blocks untill its queued
+ * with the agent for sending out. For Qos1 message, function blocks indefinitely
+ * untill an acknowledgment is received or agent has to cancel the operation due to
+ * a disconnect.
+ * 
+ * @param pcTopic Topic to publish the message to
+ * @param xTopicLength Length of the topic string
+ * @param xQos Qos Value of the publish message. Only Qos0/Qos1 are supported.
+ * @param pcPayload Payload blob to be published
+ * @param xPayloadLength Length of the payload blob.
+ * @return MQTTStatus_t MQTT status code for the publish operation.
+ */
+MQTTStatus_t xMQTTAgentPublish( const char * pcTopic,
+                                size_t xTopicLength,
+                                MQTTQoS_t xQoS,
+                                uint8_t * pcPayload,
+                                size_t xPayloadLength );
 
 #endif /* ifndef _MQTT_AGENT_TASK_H_ */

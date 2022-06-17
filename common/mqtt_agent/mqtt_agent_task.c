@@ -177,6 +177,14 @@
  */
 #define mqttexampleEVENT_BITS_ALL    ( ( EventBits_t ) ( ( 1ULL << MQTT_AGENT_NUM_STATES ) - 1U ) )
 
+
+/**
+ * @brief The maximum amount of time in milliseconds to wait for the commands
+ * to be posted to the MQTT agent should the MQTT agent's command queue be full.
+ * Tasks wait in the Blocked state, so don't use any CPU time.
+ */
+#define mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS         ( 1000 )
+
 /*-----------------------------------------------------------*/
 
 /**
@@ -190,6 +198,17 @@ typedef struct TopicFilterSubscription
     const char * pcTopicFilter;
     BaseType_t xManageResubscription;
 } TopicFilterSubscription_t;
+
+
+/**
+ * @brief Defines the structure to use as the command callback context in this
+ * demo.
+ */
+struct MQTTAgentCommandContext
+{
+    TaskHandle_t xTaskToNotify;
+    void * pArgs;
+};
 
 /*-----------------------------------------------------------*/
 
@@ -290,6 +309,22 @@ static uint32_t prvGetTimeMs( void );
  */
 static MQTTConnectionStatus_t prvConnectToMQTTBroker( bool xIsReconnect );
 
+/**
+ * @brief Passed into MQTTAgent_Publish() as the callback to execute when the
+ * broker ACKs the PUBLISH message.  Its implementation sends a notification
+ * to the task that called MQTTAgent_Publish() to let the task know the
+ * PUBLISH operation completed.  It also sets the xReturnStatus of the
+ * structure passed in as the command's context to the value of the
+ * xReturnStatus parameter - which enables the task to check the status of the
+ * operation.
+ *
+ * See https://freertos.org/mqtt/mqtt-agent-demo.html#example_mqtt_api_call
+ *
+ * @param[in] pxCommandContext Context of the initial command.
+ * @param[in].xReturnStatus The result of the command.
+ */
+static void prvPublishCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
+                                       MQTTAgentReturnInfo_t * pxReturnInfo );
 
 static void prvMQTTAgentTask( void * pvParameters );
 /*-----------------------------------------------------------*/
@@ -900,6 +935,18 @@ BaseType_t xMQTTAgentInit( configSTACK_DEPTH_TYPE uxStackSize,
 
     return xResult;
 }
+/*-----------------------------------------------------------*/
+
+static void prvPublishCommandCallback( MQTTAgentCommandContext_t * pxCommandContext,
+                                       MQTTAgentReturnInfo_t * pxReturnInfo )
+{
+    if( pxCommandContext->xTaskToNotify != NULL )
+    {
+        ( void ) xTaskNotify( pxCommandContext->xTaskToNotify,
+                              pxReturnInfo->returnCode,
+                              eSetValueWithOverwrite );
+    }
+}
 
 /*-----------------------------------------------------------*/
 
@@ -1003,4 +1050,56 @@ void vRemoveMQTTTopicFilterCallback( const char * pcTopicFilter,
         }
     }
     xSemaphoreGive( xSubscriptionsMutex );
+}
+
+/*-----------------------------------------------------------------*/
+
+MQTTStatus_t xMQTTAgentPublish( const char * pcTopic,
+                                size_t xTopicLength,
+                                MQTTQoS_t xQoS,
+                                uint8_t * pucPayload,
+                                size_t xPayloadLength )
+{
+    MQTTPublishInfo_t xPublishInfo = { 0UL };
+    MQTTAgentCommandContext_t xCommandContext = { 0 };
+    MQTTStatus_t xCommandStatus;
+    MQTTAgentCommandInfo_t xCommandParams = { 0UL };
+    uint32_t ulNotifiedValue = 0U;
+
+    xTaskNotifyStateClear( NULL );
+
+    /* Configure the publish operation. */
+    xPublishInfo.qos = xQoS;
+    xPublishInfo.pTopicName = pcTopic;
+    xPublishInfo.topicNameLength = ( uint16_t ) xTopicLength;
+    xPublishInfo.pPayload = pucPayload;
+    xPublishInfo.payloadLength = xPayloadLength;
+
+    xCommandContext.xTaskToNotify = xTaskGetCurrentTaskHandle();
+
+    xCommandParams.blockTimeMs = mqttexampleMAX_COMMAND_SEND_BLOCK_TIME_MS;
+    xCommandParams.cmdCompleteCallback = prvPublishCommandCallback;
+    xCommandParams.pCmdCompleteCallbackContext = &xCommandContext;
+
+
+    xCommandStatus = MQTTAgent_Publish( &xGlobalMqttAgentContext,
+                                        &xPublishInfo,
+                                        &xCommandParams );
+
+    if( xCommandStatus == MQTTSuccess )
+    {
+        /*
+            * If command was enqueued successfully, then agent will either process the packet successfully, or if
+            * there is a disconnect, then it either retries the publish after reconnecting and resuming session
+            * (only for persistent sessions) or cancel the operation and invokes the callback for failed response.
+            * Hence the caller task wait indefinitely for a success or failure response from agent.
+            */
+        ( void ) xTaskNotifyWait( 0UL,
+                                    UINT32_MAX,
+                                    &ulNotifiedValue,
+                                    portMAX_DELAY );
+        xCommandStatus = ( MQTTStatus_t ) ( ulNotifiedValue );
+    }
+
+    return xCommandStatus;                               
 }

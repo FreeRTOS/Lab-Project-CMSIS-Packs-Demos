@@ -33,29 +33,15 @@
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "mqtt_agent_task.h"
+#include "threading_alt.h"
+#include "mbedtls/threading.h"
 
 
 /* Set logging task as high priority task */
 #define LOGGING_TASK_PRIORITY                         (configMAX_PRIORITIES - 1)
 #define LOGGING_TASK_STACK_SIZE                       (1440)
 #define LOGGING_MESSAGE_QUEUE_LENGTH                  (15)
-
-/** 
- * Set Mutual auth demo task stack size and priority.
- * Task stack size should be sufficient for TLS handshake to succeed.
- */
-#define MQTT_MUTUAL_AUTH_DEMO_TASK_STACK_SIZE     ( 4096 )
-#define MQTT_MUTUAL_AUTH_DEMO_TASK_PRIORITY       ( tskIDLE_PRIORITY + 1)
-
-/**
- * @brief Subscribe Publish demo tasks configuration.
- * Subscribe publish demo task shows the basic functionality of connecting to an MQTT broker, subscribing
- * to a topic, publishing messages to a topic and reporting the incoming messages on subscribed topic.
- * Number of subscribe publish demo tasks to be spawned is configurable.
- */
-#define appmainMQTT_NUM_PUBSUB_TASKS              ( 2 )
-#define appmainMQTT_PUBSUB_TASK_STACK_SIZE        ( 2048 )
-#define appmainMQTT_PUBSUB_TASK_PRIORITY          ( tskIDLE_PRIORITY + 1 )
 
 /**
  * @brief Stack size and priority for MQTT agent task.
@@ -70,7 +56,7 @@
 
 static const osThreadAttr_t app_main_attr = {
   .stack_size = 4096U,
-  .name = "ML"
+  .name = "KWS"
 };
 
 
@@ -89,14 +75,40 @@ const HeapRegion_t xHeapRegions[] = {
 };
 #endif
 
+extern void loop( void );
+extern void setup( void );
+extern int32_t network_startup (void);
 
 /*---------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
 static void app_main (void *argument) {
-  setup();
-  for (;;) {
-    loop();
+
+  osThreadAttr_t taskAttr;
+  int32_t status;
+  BaseType_t xResult;
+
+  ( void ) argument;
+
+  status = network_startup();
+  if (status == 0)
+  {
+    mbedtls_threading_set_alt( mbedtls_platform_mutex_init,
+                               mbedtls_platform_mutex_free,
+                               mbedtls_platform_mutex_lock,
+                               mbedtls_platform_mutex_unlock );
+
+    /* Start agent task. */
+    xResult = xMQTTAgentInit( appmainMQTT_AGENT_TASK_STACK_SIZE, appmainMQTT_AGENT_TASK_PRIORITY );
+    if( xResult == pdTRUE )
+    {
+        ( void ) xWaitForMQTTAgentState( MQTT_AGENT_STATE_CONNECTED, portMAX_DELAY );
+        setup();
+        for (;;) {
+          loop();
+        }
+
+    }
   }
 }
 

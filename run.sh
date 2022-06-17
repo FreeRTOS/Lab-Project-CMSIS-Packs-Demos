@@ -15,7 +15,7 @@ case $1 in
     "kws")
         board="VHT_Corstone_SSE-300_Ethos-U55"
         folder="micro_speech"
-        project="Microspeech_Demo.Debug+AVH_MPS3_Corstone-300"
+        project="Microspeech_Demo.Release+AVH_MPS3_Corstone-300"
         ;;
     
     *)
