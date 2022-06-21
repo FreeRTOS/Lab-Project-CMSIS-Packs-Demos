@@ -1,4 +1,4 @@
-# ARM-AVH-IoT-Demo
+# lab-CMSIS-Packs-Demos
 Refrence example to showcase AWS IoT connectivity using ARM CMSIS packs for FreeRTOS modular libraries running on ARM Virtual Hardware.
 
 ## Hardware
