@@ -14,7 +14,7 @@ Processor : ARM Cortex M55
 how to sign up for an EC2 instance contianing ARM AMI.
 2. Login to the EC2 Instance and clone the repo:
 ```
-git clone git@github.com:ravibhagavandas/ARM-AVH-IoT-Demo.git
+git clone git@github.com:FreeRTOS/lab-CMSIS-Packs-Demos.git
 ```
 3. Setup Vscode Remote development if needed: https://code.visualstudio.com/docs/remote/ssh
 4. Install CMSIS packs for all dependent libraries. Goto repository home folder and execute:
